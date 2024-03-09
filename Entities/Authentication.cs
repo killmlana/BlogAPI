@@ -34,8 +34,14 @@ public class Authentication
 
         return hashString;
     }
-    
-    //function for generating UIDs
 
-
+    public virtual bool IsVerified(string password, string hashedPassword)
+    {
+        byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+        if (Argon2.Verify(hashedPassword, passwordBytes, 5))
+        {
+            return true;
+        }
+        return false;
+    }
 }
