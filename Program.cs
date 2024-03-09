@@ -1,3 +1,43 @@
+using BlogAPI.Entities;
+using FluentNHibernate.Cfg;
+using FluentNHibernate.Cfg.Db;
+using NHibernate;
+using NHibernate.Cfg;
+using NHibernate.Tool.hbm2ddl;
+
+static ISessionFactory CreateSessionFactory()
+{
+    return Fluently.Configure()
+        .Database(
+            SQLiteConfiguration.Standard
+                .UsingFile("firstProject.db")
+        )
+        .Mappings(m =>
+            m.FluentMappings.AddFromAssemblyOf<Program>())
+        .ExposeConfiguration(BuildSchema)
+        .BuildSessionFactory();
+}
+
+static void BuildSchema(Configuration config)
+{
+    // delete the existing db on each run
+    if (File.Exists("firstProject.db"))
+        File.Delete("firstProject.db");
+
+    // this NHibernate tool takes a configuration (with mapping info in)
+    // and exports a database schema from it
+    new SchemaExport(config)
+        .Create(false, true);
+}
+
+static void AddPostsToUser(User user, params Post[] posts)
+{
+    foreach (var post in posts)
+    {
+        post.AddPost(user);
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -16,29 +56,22 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapPost("/addUser", () =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var sessionFactory = CreateSessionFactory();
+    using (var session = sessionFactory.OpenSession())
+    {
+        using (var transaction = session.BeginTransaction())
+        {
+            var tempUser = new User("wldhalhwdnawd", "killmlana", "aojwdajwpak", 10, 198273);
+            var tempPost = new Post("sladwlajd", tempUser, "test", "test", 1982022, 028302, 1);
+            AddPostsToUser(tempUser, tempPost);
+            session.SaveOrUpdate(tempUser);
+            transaction.Commit();
+        }
+    }
 })
-.WithName("GetWeatherForecast")
+.WithName("SetUser")
 .WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
