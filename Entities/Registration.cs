@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace BlogAPI.Entities;
 
 public class Registration

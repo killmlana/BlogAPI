@@ -1,16 +1,14 @@
-using System.Collections.ObjectModel;
-
 namespace BlogAPI.Entities;
 
-public sealed class User
+public class User
 {
-    public string Id { get; set; }
-    public string Username { get; set; }
-    public int Role { get; set; }
-    internal string HashedPassword { get; set; }
-    public ICollection<Post> PostHistory { get; set; }
-    public ICollection<Comment> CommentHistory { get; set; }
-    public long DateCreated { get; set; }
+    public virtual string Id { get; set; }
+    public virtual string Username { get; set; }
+    public virtual int Role { get; set; }
+    internal virtual string HashedPassword { get; set; }
+    public virtual IList<Post> PostHistory { get; set; }
+    public virtual IList<Comment> CommentHistory { get; set; }
+    public virtual long DateCreated { get; set; }
 
     public User(string id, string username, string hashedPassword, int role, long dateCreated)
     {
@@ -19,7 +17,17 @@ public sealed class User
         HashedPassword = hashedPassword;
         Role = Role;
         DateCreated = dateCreated;
-        PostHistory = new Collection<Post>();
-        CommentHistory = new Collection<Comment>();
+        PostHistory = new List<Post>();
+        CommentHistory = new List<Comment>();
+    }
+
+    public void AddPost(Post post)
+    {
+        PostHistory.Add(post);
+    }
+
+    public void AddComment(Comment comment)
+    {
+        CommentHistory.Add(comment);
     }
 }
