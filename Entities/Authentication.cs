@@ -11,7 +11,7 @@ public class Authentication
     private static readonly RandomNumberGenerator Rng = System.Security.Cryptography.RandomNumberGenerator.Create();
     
     //Function for salting and hashing the password.
-    public virtual string Hash(string password)
+    public static string Hash(string password)
     {
         byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
         byte[] salt = new byte[16];
@@ -35,7 +35,7 @@ public class Authentication
         return hashString;
     }
 
-    public virtual bool IsVerified(string password, string hashedPassword)
+    public static bool IsVerified(string password, string hashedPassword)
     {
         byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
         if (Argon2.Verify(hashedPassword, passwordBytes, 5))

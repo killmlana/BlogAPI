@@ -1,26 +1,25 @@
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices.JavaScript;
 
 namespace BlogAPI.Entities;
 
-public class User
+public sealed class User
 {
-    public virtual int Id { get; set; }
-    public virtual string Username { get; set; }
-    public virtual int Role { get; set; }
-    internal virtual string HashedPassword { get; set; }
-    public virtual ICollection<Post> PostHistory { get; set; }
-    public virtual ICollection<Comment> CommentHistory { get; set; }
-    public virtual JSType.Date DateCreated { get; set; }
+    public string Id { get; set; }
+    public string Username { get; set; }
+    public int Role { get; set; }
+    internal string HashedPassword { get; set; }
+    public ICollection<Post> PostHistory { get; set; }
+    public ICollection<Comment> CommentHistory { get; set; }
+    public long DateCreated { get; set; }
 
-    public User()
+    public User(string id, string username, string hashedPassword, int role, long dateCreated)
     {
+        Id = id;
+        Username = username;
+        HashedPassword = hashedPassword;
+        Role = Role;
+        DateCreated = dateCreated;
         PostHistory = new Collection<Post>();
         CommentHistory = new Collection<Comment>();
-    }
-
-    public virtual void AddHashedPassword(string hash)
-    {
-        HashedPassword = hash;
     }
 }
