@@ -8,12 +8,12 @@ public class Comment
     public virtual User Owner { get; set; }
     public virtual string Content { get; set; }
     public virtual int Likes { get; set; }
-    public virtual int PostId { get; set; }
+    public virtual string PostId { get; set; }
     public virtual IList<Reply> Replies { get; set; }
     public virtual long DateCreated { get; set; }
     public virtual long DateModified { get; set; }
 
-    public Comment(string id, User owner, string content, IList<int> replies, int likes, int postId, long dateCreated, long dateModified)
+    public Comment(string id, User owner, string content, IList<int> replies, int likes, string postId, long dateCreated, long dateModified)
     {
         Id = id;
         Owner = owner;

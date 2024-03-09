@@ -2,7 +2,7 @@ namespace BlogAPI.Entities;
 
 public class Registration
 {
-    public virtual User CreateUser(string username, string password)
+    public static User CreateUser(string username, string password)
     {
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         string hashedPassword = Authentication.Hash(password);
