@@ -12,9 +12,8 @@ public class Post
     public virtual long DateModified { get; set; }
     public virtual int Category { get; set; }
     public virtual ICollection<Comment> Comments { get; set; }
-    public virtual int Likes { get; set; }
 
-    public Post(string id, User owner, string title, string content, long dateCreated, long dateModified)
+    public Post(string id, User owner, string title, string content, long dateCreated, long dateModified, int category)
     {
         Id = id;
         Owner = owner;
@@ -22,6 +21,7 @@ public class Post
         Content = content;
         DateCreated = dateCreated;
         DateModified = dateModified;
+        Category = category;
         Comments = new Collection<Comment>();
     }
 

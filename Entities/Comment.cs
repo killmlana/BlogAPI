@@ -9,7 +9,7 @@ public class Comment
     public virtual string Content { get; set; }
     public virtual int Likes { get; set; }
     public virtual int PostId { get; set; }
-    public virtual IList<int> Replies { get; set; }
+    public virtual IList<Reply> Replies { get; set; }
     public virtual long DateCreated { get; set; }
     public virtual long DateModified { get; set; }
 
@@ -18,15 +18,20 @@ public class Comment
         Id = id;
         Owner = owner;
         Content = content;
-        Replies = replies;
         Likes = likes;
         PostId = postId;
         DateCreated = dateCreated;
         DateModified = dateModified;
+        Replies = new List<Reply>();
     }
 
     public virtual void AddComment(User user)
     {
         user.AddComment(this);
+    }
+
+    public virtual void AddReply(Reply reply)
+    {
+        Replies.Add(reply);
     }
 }
