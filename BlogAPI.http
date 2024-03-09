@@ -1,6 +1,6 @@
 @BlogAPI_HostAddress = http://localhost:5052
 
-GET {{BlogAPI_HostAddress}}/addUser/
+POST /addUser/
 Accept: application/json
 
 ###

@@ -12,6 +12,6 @@ public class CommentMap : ClassMap<Comment>
         Map(x => x.Content);
         Map(x => x.DateCreated);
         Map(x => x.DateModified);
-        References(x => x.PostId);
+        References(x => x.Post);
     }
 }

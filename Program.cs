@@ -2,6 +2,8 @@ using BlogAPI.Entities;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using NHibernate;
+using NHibernate.Cfg;
+using NHibernate.Tool.hbm2ddl;
 
 static ISessionFactory CreateSessionFactory()
 {
@@ -12,7 +14,20 @@ static ISessionFactory CreateSessionFactory()
         )
         .Mappings(m =>
             m.FluentMappings.AddFromAssemblyOf<Program>())
+        .ExposeConfiguration(BuildSchema)
         .BuildSessionFactory();
+}
+
+static void BuildSchema(Configuration config)
+{
+    // delete the existing db on each run
+    if (File.Exists("firstProject.db"))
+        File.Delete("firstProject.db");
+
+    // this NHibernate tool takes a configuration (with mapping info in)
+    // and exports a database schema from it
+    new SchemaExport(config)
+        .Create(false, true);
 }
 
 static void AddPostsToUser(User user, params Post[] posts)
