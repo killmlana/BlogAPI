@@ -1,4 +1,6 @@
-namespace BlogAPI.Entities;
+using BlogAPI.Entities;
+
+namespace BlogAPI.Helpers;
 
 public class Registration
 {

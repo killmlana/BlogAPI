@@ -1,9 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
+using BlogAPI.Entities;
 using Isopoh.Cryptography.Argon2;
 using Isopoh.Cryptography.SecureArray;
 
-namespace BlogAPI.Entities;
+namespace BlogAPI.Helpers;
 
 public class Authentication
 {   
