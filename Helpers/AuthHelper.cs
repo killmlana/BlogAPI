@@ -9,7 +9,7 @@ public class Registration
     {
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        string hashedPassword = Authentication.Hash(password);
+        string hashedPassword = BcryptHelper.Hash(password);
         int role = 10;
         var newUser = new User(id, username, hashedPassword, role, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         return newUser;

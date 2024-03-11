@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using BlogAPI.Entities;
 
 
@@ -7,7 +8,7 @@ namespace BlogAPI.Helpers;
 
 //TODO fix memory issue with hashing passwords.
 
-public class Authentication
+public class BcryptHelper
 {   
     //Initializing an instance of the random number generator.
     private static readonly RandomNumberGenerator Rng = System.Security.Cryptography.RandomNumberGenerator.Create();
@@ -27,4 +28,5 @@ public class Authentication
         }
         return false;
     }
+    
 }

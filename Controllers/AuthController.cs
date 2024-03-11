@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,13 @@ public class AuthController(Registration registration) : ControllerBase
         try
         {
             //TODO Validate userDto
+            if (Regex.IsMatch(userDto.username, "[^0-9a-zA-Z]+"))
+            {
+                return BadRequest($"Registration failed: Only alphanumeric characters are allowed in username.");
+            }
+            
+            
+            
             // Register the user
             var user = registration.CreateUser(userDto.username, userDto.password);
             
