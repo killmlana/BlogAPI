@@ -1,8 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using BlogAPI.Entities;
-using Isopoh.Cryptography.Argon2;
-using Isopoh.Cryptography.SecureArray;
+
 
 namespace BlogAPI.Helpers;
 
@@ -16,32 +15,13 @@ public class Authentication
     //Method for salting and hashing the password.
     public static string Hash(string password)
     {
-        byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-        byte[] salt = new byte[16];
-        Rng.GetBytes(salt);
-        
-        var config = new Argon2Config
-        {
-            Type = Argon2Type.DataIndependentAddressing, 
-            Version = Argon2Version.Nineteen,
-            TimeCost = 10,
-            MemoryCost = 32768,
-            Lanes = 5, // higher than "Lanes" doesn't help (or hurt)
-            Password = passwordBytes,
-            Salt = salt, // >= 8 bytes if not null
-            HashLength = 20 // >= 4
-        };
-        var argon2A = new Argon2(config);
-        using SecureArray<byte> hashA = argon2A.Hash();
-        var hashString = config.EncodeString(hashA.Buffer);
-
-        return hashString;
+        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+        return hashedPassword;
     }
 
     public static bool IsVerified(User user, string password)
     {
-        byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-        if (Argon2.Verify(user.HashedPassword, passwordBytes, 5))
+        if (BCrypt.Net.BCrypt.Verify(password, user.HashedPassword))
         {
             return true;
         }

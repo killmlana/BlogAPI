@@ -8,7 +8,6 @@ namespace BlogAPI.Controllers;
 [ApiController]
 public class AuthController(Registration registration) : ControllerBase
 {
-    // Concrete implementation
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserDTO userDto)
