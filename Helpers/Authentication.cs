@@ -6,6 +6,8 @@ using Isopoh.Cryptography.SecureArray;
 
 namespace BlogAPI.Helpers;
 
+//TODO fix memory issue with hashing passwords.
+
 public class Authentication
 {   
     //Initializing an instance of the random number generator.

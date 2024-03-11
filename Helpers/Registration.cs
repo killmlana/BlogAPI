@@ -4,7 +4,7 @@ namespace BlogAPI.Helpers;
 
 public class Registration
 {
-    public static User CreateUser(string username, string password)
+    public User CreateUser(string username, string password)
     {
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         string hashedPassword = Authentication.Hash(password);

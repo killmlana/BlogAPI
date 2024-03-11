@@ -1,34 +1,6 @@
 using BlogAPI.Entities;
-using FluentNHibernate.Cfg;
-using FluentNHibernate.Cfg.Db;
-using NHibernate;
-using NHibernate.Cfg;
-using NHibernate.Tool.hbm2ddl;
-
-static ISessionFactory CreateSessionFactory()
-{
-    return Fluently.Configure()
-        .Database(
-            SQLiteConfiguration.Standard
-                .UsingFile("firstProject.db")
-        )
-        .Mappings(m =>
-            m.FluentMappings.AddFromAssemblyOf<Program>())
-        .ExposeConfiguration(BuildSchema)
-        .BuildSessionFactory();
-}
-
-static void BuildSchema(Configuration config)
-{
-    // delete the existing db on each run
-    if (File.Exists("firstProject.db"))
-        File.Delete("firstProject.db");
-
-    // this NHibernate tool takes a configuration (with mapping info in)
-    // and exports a database schema from it
-    new SchemaExport(config)
-        .Create(false, true);
-}
+using BlogAPI.Helpers;
+using Microsoft.AspNetCore.Authentication;
 
 static void AddPostsToUser(User user, params Post[] posts)
 {
@@ -41,6 +13,10 @@ static void AddPostsToUser(User user, params Post[] posts)
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddScoped<Registration>();
+builder.Services.AddScoped<AuthenticationService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -56,22 +32,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("/addUser", () =>
-{
-    var sessionFactory = CreateSessionFactory();
-    using (var session = sessionFactory.OpenSession())
-    {
-        using (var transaction = session.BeginTransaction())
-        {
-            var tempUser = new User("wldhalhwdnawd", "killmlana", "aojwdajwpak", 10, 198273);
-            var tempPost = new Post("sladwlajd", tempUser, "test", "test", 1982022, 028302, 1);
-            AddPostsToUser(tempUser, tempPost);
-            session.SaveOrUpdate(tempUser);
-            transaction.Commit();
-        }
-    }
-})
-.WithName("SetUser")
-.WithOpenApi();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();
