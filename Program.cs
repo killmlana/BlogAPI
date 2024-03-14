@@ -1,3 +1,4 @@
+using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using Microsoft.AspNetCore.Authentication;
@@ -14,8 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddScoped<Registration>();
-builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddScoped<INhibernateHelper, NHibernateHelper>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

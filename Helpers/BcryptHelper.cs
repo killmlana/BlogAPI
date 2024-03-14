@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using BlogAPI.Entities;
+using BlogAPI.Models;
 
 
 namespace BlogAPI.Helpers;
@@ -20,9 +21,9 @@ public class BcryptHelper
         return hashedPassword;
     }
 
-    public static bool IsVerified(User user, string password)
+    public static bool IsVerified(User user, UserDTO userDto)
     {
-        if (BCrypt.Net.BCrypt.Verify(password, user.HashedPassword))
+        if (BCrypt.Net.BCrypt.Verify(userDto.password, user.HashedPassword))
         {
             return true;
         }
