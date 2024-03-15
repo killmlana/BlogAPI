@@ -13,133 +13,89 @@ namespace BlogAPI.Helpers;
 
 public class NHibernateHelper : INhibernateHelper
 {
+
     private ISessionFactory _sessionFactory;
 
-    public NHibernateHelper(ISessionFactory sessionFactory)
+    public NHibernateHelper()
     {
-        _sessionFactory = sessionFactory;
-    }
-
-    private ISessionFactory SessionFactory
-    {
-        get
-        {
-            return _sessionFactory = Fluently.Configure()
-                .Database(
-                    SQLiteConfiguration.Standard
-                        .UsingFile("firstProject.db")
-                )
-                .Mappings(m =>
-                    m.FluentMappings.AddFromAssemblyOf<Program>())
-                .ExposeConfiguration(BuildSchema)
-                .BuildSessionFactory();
-        }
-    }
+        _sessionFactory = Fluently.Configure()
+            .Database(
+                SQLiteConfiguration.Standard
+                    .UsingFile("firstProject.db")
+            )
+            .Mappings(m =>
+                m.FluentMappings.AddFromAssemblyOf<Program>())
+            .ExposeConfiguration(BuildSchema)
+            .BuildSessionFactory();
+    } 
+    
     private void BuildSchema(Configuration config)
     {
-        // delete the existing db on each run
-        if (File.Exists("firstProject.db"))
-            File.Delete("firstProject.db");
-
         // this NHibernate tool takes a configuration (with mapping info in)
         // and exports a database schema from it
         new SchemaExport(config)
             .Create(false, true);
     }
+
     public ISession OpenSession()
     {
         return _sessionFactory.OpenSession();
     }
-
-    public async Task SetUsername(User user, string? username, ISession? session=null)
+    
+    public ISession GetSession()
     {
-        if (username == null) return;
-        if (session == null)
-        {
-            try
-            {
-                session = OpenSession();
-                await SetUsername(user, username, session);
-                return;
-            }
-            catch (Exception e) 
-            {
-                Console.WriteLine("Error: " + e);
-                return;
-            }
-        } 
-        using (var transaction = session.BeginTransaction())
-        {
-            try
-            {
-                var userToUpdate = await FindByuserId(user.Id, session);
-                if (userToUpdate == null)
-                {
-                    Console.WriteLine("Error Occured while trying to query user.");
-                    return;
-                }
-                userToUpdate.Username = username;
-                await session.SaveAsync(userToUpdate);
-                await transaction.CommitAsync();
-                await session.FlushAsync();
-            }
-            catch (Exception e)
-            {
-                await transaction.RollbackAsync();
-                Console.WriteLine("Error occured: " + e.Message);
-            }
-        }
+        return _sessionFactory.GetCurrentSession();
     }
 
-    public async Task<User?> FindByuserId(string id, ISession? s=null) // returns null if no user found.
+    public async Task Dispose()
     {
-        if (s == null)
+        _sessionFactory.Dispose();
+    }
+
+    public async Task SetUsername(User user, string? username)
         {
-            try
+            if (username == null) return;
+            using (var session = _sessionFactory.OpenSession())
+            using (var transaction = session.BeginTransaction())
             {
-                s = OpenSession();
-                return await FindByuserId(id, s);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error: " + e);
-                return null;
+                try
+                {
+                    var userToUpdate = await session.GetAsync<User>(user.Id);
+                    if (userToUpdate == null)
+                    {
+                        Console.WriteLine("Error Occured while trying to query user.");
+                        return;
+                    }
+                    userToUpdate.Username = username;
+                    await session.SaveOrUpdateAsync(userToUpdate);
+                    await transaction.CommitAsync();
+                }
+                catch (Exception e)
+                {
+                    await transaction.RollbackAsync();
+                    Console.WriteLine("Error occured: " + e.Message);
+                }
             }
         }
-        try
+
+    public async Task<User?> FindByuserId(string id) // returns null if no user found.
+    {
+        using (var s = OpenSession())
         {
-            var queryUser = await s.GetAsync<User?>(id);
+            User? queryUser = await s.GetAsync<User?>(id);
             return queryUser;
         }
-        catch (Exception e)
-        {
-            return null;
-        }
     }
 
-    public async Task DeleteUser(User user, ISession? session = null)
+    public async Task DeleteUser(User user)
     {
-        if (session == null)
-        {
-            try
-            {
-                session = OpenSession();
-                await DeleteUser(user, session);
-                return;
-            }
-            catch (Exception e) 
-            {
-                Console.WriteLine("Error: " + e);
-                return;
-            }
-        }
-
+        using (var session = OpenSession())
         using (var transaction = session.BeginTransaction())
         {
             try
             {
                 var userToDelete = await session.GetAsync<User>(user.Id);
-                if (userToDelete == null) return;
+                if (userToDelete == null) throw new QueryException("User not found.");
                 await session.DeleteAsync(userToDelete);
                 await transaction.CommitAsync();
                 await session.FlushAsync();
@@ -152,31 +108,40 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task<User?> FindByName(string name, ISession? session = null)
+    public async Task Update(User user)
     {
-        if (session == null)
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
         {
-            try
-            {
-                session = OpenSession();
-                return await FindByName(name, session);
-            }
-            catch (Exception e) 
-            {
-                Console.WriteLine("Error: " + e);
-                return null;
-            }
-        }
+            await session.UpdateAsync(user);
+            await session.FlushAsync();
+            await transaction.CommitAsync();
+        }    
+    }
 
-        try
+    public async Task<User?> FindByName(string name) // returns null when no user is found
+    {
+        using (var session = _sessionFactory.OpenSession())
         {
-            return await session.Query<User>().FirstOrDefaultAsync(u => u.Username.ToLower() == name);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error: " + e);
-            return null;
+            User? userToFind = await session.Query<User>().FirstOrDefaultAsync(u => u.Username.ToLower() == name);
+            return userToFind;
         }
     }
+
+    public async Task CreateUser(User user)
+    {
+        try
+        {
+            using (var session = _sessionFactory.OpenSession())
+            using (var transaction = session.BeginTransaction())
+            {
+                await session.MergeAsync(user);
+                await transaction.CommitAsync();
+            }
+        } catch (Exception e)
+        {
+            throw;
+        }
+    } 
 }
             

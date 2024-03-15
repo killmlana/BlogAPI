@@ -1,7 +1,8 @@
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
-using Microsoft.AspNetCore.Authentication;
+using BlogAPI.Models;
+using Microsoft.AspNetCore.Identity;
 
 static void AddPostsToUser(User user, params Post[] posts)
 {
@@ -15,7 +16,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddRazorPages();
+builder.Services.AddScoped<NHibernateHelper>();
+builder.Services.AddScoped<BcryptHelper>();
+builder.Services.AddScoped<AuthHelper>();
 builder.Services.AddScoped<INhibernateHelper, NHibernateHelper>();
+builder.Services.AddScoped<IUserPasswordStore<User>, CustomUserStore>();
+builder.Services.AddScoped<IRoleStore<User>, CustomRoleStore>();
+builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();
+builder.Services.AddScoped<IBcryptHelper, BcryptHelper>();
+builder.Services.AddIdentity<User, User>().AddUserStore<CustomUserStore>().AddRoleStore<CustomRoleStore>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -31,6 +41,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using BlogAPI.Models;
 
@@ -9,21 +10,19 @@ namespace BlogAPI.Helpers;
 
 //TODO fix memory issue with hashing passwords.
 
-public class BcryptHelper
+public class BcryptHelper : IBcryptHelper
 {   
-    //Initializing an instance of the random number generator.
-    private static readonly RandomNumberGenerator Rng = System.Security.Cryptography.RandomNumberGenerator.Create();
     
     //Method for salting and hashing the password.
-    public static string Hash(string password)
+    public string Hash(string password)
     {
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
         return hashedPassword;
     }
 
-    public static bool IsVerified(User user, UserDTO userDto)
+    public bool IsVerified(User user, string password)
     {
-        if (BCrypt.Net.BCrypt.Verify(userDto.password, user.HashedPassword))
+        if (BCrypt.Net.BCrypt.Verify(password, user.HashedPassword))
         {
             return true;
         }

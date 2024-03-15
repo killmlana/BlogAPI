@@ -8,16 +8,18 @@ namespace BlogAPI.Helpers;
 public class AuthHelper
 {
     private readonly NHibernateHelper _nHibernateHelper;
+    private readonly BcryptHelper _bcryptHelper;
 
-    public AuthHelper(NHibernateHelper nHibernateHelper)
+    public AuthHelper(NHibernateHelper nHibernateHelper, BcryptHelper bcryptHelper)
     {
         _nHibernateHelper = nHibernateHelper;
+        _bcryptHelper = bcryptHelper;
     }
     public User CreateUser(UserDTO userDto)
     {
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        string hashedPassword = BcryptHelper.Hash(userDto.password);
+        string hashedPassword = _bcryptHelper.Hash(userDto.password);
         int role = 10;
         var newUser = new User(id, userDto.username, hashedPassword, role, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
         return newUser;
@@ -29,7 +31,7 @@ public class AuthHelper
         var session = _nHibernateHelper.OpenSession();
         var query = session.Query<User>().FirstOrDefault(e => e.Username == userDto.username);
         if (query == null) return null;
-        if (BcryptHelper.IsVerified(query, userDto))
+        if (_bcryptHelper.IsVerified(query, userDto.password))
         {
             return query;
         }

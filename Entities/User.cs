@@ -5,7 +5,7 @@ public class User
     public virtual string Id { get; set; }
     public virtual string Username { get; set; }
     public virtual int Role { get; set; }
-    public virtual string HashedPassword { get; set; }
+    public virtual string? HashedPassword { get; set; }
     public virtual IList<Post> PostHistory { get; set; }
     public virtual IList<Comment> CommentHistory { get; set; }
     public virtual long DateCreated { get; set; }
