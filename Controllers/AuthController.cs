@@ -1,6 +1,7 @@
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,7 @@ public class AuthController : ControllerBase
         _manager = manager;
     }
     
+    [Authorize(Roles = Entities.User.UserRole.ADMIN.1)]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserDTO userDto)
     {
@@ -38,9 +40,9 @@ public class AuthController : ControllerBase
         }
     }
 
-    /*[HttpPost("login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserDTO userDto)
     {
-        await 
-    }*/
+        
+    }
 }

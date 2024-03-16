@@ -2,7 +2,9 @@ using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 
 static void AddPostsToUser(User user, params Post[] posts)
 {
@@ -26,6 +28,7 @@ builder.Services.AddScoped<IRoleStore<User>, CustomRoleStore>();
 builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();
 builder.Services.AddScoped<IBcryptHelper, BcryptHelper>();
 builder.Services.AddIdentity<User, User>().AddUserStore<CustomUserStore>().AddRoleStore<CustomRoleStore>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => builder.Configuration.Bind("JwtSettings", options)).AddCookie(options => builder.Configuration.Bind("CookieSettings", options));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
