@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace BlogAPI.Entities;
 
-public class User
+public class User : IdentityUser
 {
     public virtual string Id { get; set; }
     public virtual string Username { get; set; }

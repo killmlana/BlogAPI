@@ -1,6 +1,5 @@
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
-using NHibernate.Mapping;
 
 namespace BlogAPI.Models;
 using Microsoft.AspNetCore.Identity;
