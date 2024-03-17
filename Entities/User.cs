@@ -4,9 +4,9 @@ namespace BlogAPI.Entities;
 
 public class User : IdentityUser
 {
-    public virtual string Id { get; set; }
+    public new virtual string Id { get; set; }
     public virtual string Username { get; set; }
-    public virtual int Role { get; set; }
+    public virtual Role Role { get; set; }
     public virtual string? HashedPassword { get; set; }
     public virtual IList<Post> PostHistory { get; set; }
     public virtual IList<Comment> CommentHistory { get; set; }
@@ -18,7 +18,7 @@ public class User : IdentityUser
         CommentHistory = new List<Comment>();
     }
 
-    public User(string id, string username, string hashedPassword, int role, long dateCreated)
+    public User(string id, string username, string hashedPassword, Role role, long dateCreated)
     {
         Id = id;
         Username = username;

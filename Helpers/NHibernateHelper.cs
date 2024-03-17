@@ -52,31 +52,31 @@ public class NHibernateHelper : INhibernateHelper
         _sessionFactory.Dispose();
     }
 
-    public async Task SetUsername(User user, string? username)
+    #region UserStore
+
+    public async Task SetUsername(User user, string username)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
         {
-            if (username == null) return;
-            using (var session = _sessionFactory.OpenSession())
-            using (var transaction = session.BeginTransaction())
+            try
             {
-                try
+                var userToUpdate = await session.GetAsync<User>(user.Id);
+                if (userToUpdate == null)
                 {
-                    var userToUpdate = await session.GetAsync<User>(user.Id);
-                    if (userToUpdate == null)
-                    {
-                        Console.WriteLine("Error Occured while trying to query user.");
-                        return;
-                    }
-                    userToUpdate.Username = username;
-                    await session.SaveOrUpdateAsync(userToUpdate);
-                    await transaction.CommitAsync();
+                    throw new QueryException("No role found.");
                 }
-                catch (Exception e)
-                {
-                    await transaction.RollbackAsync();
-                    Console.WriteLine("Error occured: " + e.Message);
-                }
+                userToUpdate.Username = username;
+                await session.SaveOrUpdateAsync(userToUpdate);
+                await transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
         }
+    }
 
     public async Task<User?> FindByuserId(string id) // returns null if no user found.
     {
@@ -108,7 +108,7 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task Update(User user)
+    public async Task UpdateUser(User user)
     {
         using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())
@@ -119,11 +119,11 @@ public class NHibernateHelper : INhibernateHelper
         }    
     }
 
-    public async Task<User?> FindByName(string name) // returns null when no user is found
+    public async Task<User?> FindByUserName(string name) // returns null when no user is found
     {
         using (var session = _sessionFactory.OpenSession())
         {
-            User? userToFind = await session.Query<User>().FirstOrDefaultAsync(u => u.Username.ToLower() == name);
+            User? userToFind = await session.Query<User>().FirstOrDefaultAsync(u => u.Username.ToLowerInvariant() == name);
             return userToFind;
         }
     }
@@ -143,5 +143,97 @@ public class NHibernateHelper : INhibernateHelper
             throw;
         }
     } 
+
+    #endregion
+
+    public async Task CreateRole(Role role)
+    {
+        try
+        {
+            using (var session = _sessionFactory.OpenSession())
+            using (var transaction = session.BeginTransaction())
+            {
+                await session.MergeAsync(role);
+                await transaction.CommitAsync();
+            }
+        } catch (Exception e)
+        {
+            throw;
+        }
+    }
+
+    public async Task UpdateRole(Role role)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
+        {
+            await session.UpdateAsync(role);
+            await session.FlushAsync();
+            await transaction.CommitAsync();
+        }
+    }
+
+    public async Task DeleteRole(Role role)
+    {
+        using (var session = OpenSession())
+        using (var transaction = session.BeginTransaction())
+        {
+            try
+            {
+                var roleToDelete = await session.GetAsync<Role>(role.Id);
+                if (roleToDelete == null) throw new QueryException("Role not found.");
+                await session.DeleteAsync(roleToDelete);
+                await transaction.CommitAsync();
+                await session.FlushAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: " + e);
+                await transaction.RollbackAsync();
+            }
+        }
+    }
+
+    public async Task SetRolename(Role role, string roleName)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
+        {
+            try
+            {
+                var roleToUpdate = await session.GetAsync<Role>(role.Id);
+                if (roleToUpdate == null)
+                {
+                    throw new QueryException("No role found.");
+                }
+                roleToUpdate.Name = roleName;
+                await session.SaveOrUpdateAsync(roleName);
+                await transaction.CommitAsync();
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+    }
+
+    public async Task<Role?> FindByRoleId(string roleId) //returns null if no role found.
+    {
+        using (var s = OpenSession())
+        {
+            var queryRole = await s.GetAsync<Role?>(roleId);
+            return queryRole;
+        }
+    }
+
+    public async Task<Role?> FindByRoleName(string roleName) //returns null if no role found.
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            var roleToFind = await session.Query<Role>().FirstOrDefaultAsync(r => r.Name.ToLowerInvariant() == roleName);
+            return roleToFind;
+        }
+    }
 }
             

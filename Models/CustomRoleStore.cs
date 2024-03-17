@@ -1,62 +1,96 @@
 using BlogAPI.Entities;
+using BlogAPI.Helpers;
 using Microsoft.AspNetCore.Identity;
 
 namespace BlogAPI.Models;
 
-public class CustomRoleStore : IRoleStore<User>
+public class CustomRoleStore : IRoleStore<Role>
 {
-    public void Dispose()
+    private readonly NHibernateHelper _nHibernateHelper;
+
+    public CustomRoleStore(NHibernateHelper nHibernateHelper)
     {
-        throw new NotImplementedException();
+        _nHibernateHelper = nHibernateHelper;
+    }
+    public async void Dispose()
+    {
+        await _nHibernateHelper.Dispose();
     }
 
-    public async Task<IdentityResult> CreateAsync(User role, CancellationToken cancellationToken)
+    public async Task<IdentityResult> CreateAsync(Role role, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _nHibernateHelper.CreateRole(role);
+            return IdentityResult.Success;
+        }
+        catch
+        {
+            return IdentityResult.Failed();
+        }
     }
 
-    public async Task<IdentityResult> UpdateAsync(User role, CancellationToken cancellationToken)
+    public async Task<IdentityResult> UpdateAsync(Role role, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _nHibernateHelper.UpdateRole(role);
+            return IdentityResult.Success;
+        }
+        catch
+        {
+            return IdentityResult.Failed();
+        }
     }
 
-    public async Task<IdentityResult> DeleteAsync(User role, CancellationToken cancellationToken)
+    public async Task<IdentityResult> DeleteAsync(Role role, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        try
+        {
+            await _nHibernateHelper.DeleteRole(role);
+            return IdentityResult.Success;
+        }
+        catch
+        {
+            return IdentityResult.Failed();
+        }
     }
 
-    public async Task<string> GetRoleIdAsync(User role, CancellationToken cancellationToken)
+    public async Task<string> GetRoleIdAsync(Role role, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await Task.FromResult(role.Id);
     }
 
-    public async Task<string?> GetRoleNameAsync(User role, CancellationToken cancellationToken)
+    public async Task<string?> GetRoleNameAsync(Role role, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await Task.FromResult(role.Name);
     }
 
-    public async Task SetRoleNameAsync(User role, string? roleName, CancellationToken cancellationToken)
+    public async Task SetRoleNameAsync(Role role, string? roleName, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        if (roleName == null) throw new ArgumentNullException(roleName);
+        await _nHibernateHelper.SetRolename(role, roleName);
     }
 
-    public async Task<string?> GetNormalizedRoleNameAsync(User role, CancellationToken cancellationToken)
+    public async Task<string?> GetNormalizedRoleNameAsync(Role role, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await Task.FromResult(role.Name.ToLowerInvariant());
     }
 
-    public async Task SetNormalizedRoleNameAsync(User role, string? normalizedName, CancellationToken cancellationToken)
+    public async Task SetNormalizedRoleNameAsync(Role role, string? normalizedName, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        if (normalizedName == null) throw new ArgumentNullException(normalizedName);
+        role.Name = normalizedName;
+        await UpdateAsync(role, cancellationToken);
     }
 
-    public async Task<User?> FindByIdAsync(string roleId, CancellationToken cancellationToken)
+    public async Task<Role?> FindByIdAsync(string roleId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await _nHibernateHelper.FindByRoleId(roleId);
     }
 
-    public async Task<User?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
+    public async Task<Role?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await _nHibernateHelper.FindByRoleName(normalizedRoleName.ToLowerInvariant());
     }
 }

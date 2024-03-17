@@ -64,7 +64,7 @@ public class CustomUserStore : IUserPasswordStore<User>
     {
         try
         {
-            await _nHibernateHelper.Update(user);
+            await _nHibernateHelper.UpdateUser(user);
             return IdentityResult.Success;
         }
         catch (Exception e)
@@ -93,7 +93,7 @@ public class CustomUserStore : IUserPasswordStore<User>
 
     public async Task<User?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
     {
-        return await _nHibernateHelper.FindByName(normalizedUserName);
+        return await _nHibernateHelper.FindByUserName(normalizedUserName);
     }
 
     public async Task SetPasswordHashAsync(User user, string? passwordHash, CancellationToken cancellationToken)

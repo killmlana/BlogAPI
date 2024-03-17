@@ -10,7 +10,7 @@ public class UserMap : ClassMap<User>
         Id(x => x.Id);
         Map(x => x.Username);
         Map(x => x.HashedPassword);
-        Map(x => x.Role);
+        References(x => x.Role);
         Map(x => x.DateCreated);
         HasMany(x => x.PostHistory).Inverse().Cascade.All();
         HasMany(x => x.CommentHistory).Inverse().Cascade.All();
