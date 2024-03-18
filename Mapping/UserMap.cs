@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BlogAPI.Entities;
 using FluentNHibernate.Mapping;
 
@@ -11,6 +12,7 @@ public class UserMap : ClassMap<User>
         Map(x => x.Username);
         Map(x => x.HashedPassword);
         References(x => x.Role);
+        HasManyToMany<Claim>(x => x.Claims).Inverse().Cascade.All();
         Map(x => x.DateCreated);
         HasMany(x => x.PostHistory).Inverse().Cascade.All();
         HasMany(x => x.CommentHistory).Inverse().Cascade.All();

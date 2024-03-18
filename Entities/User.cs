@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
 namespace BlogAPI.Entities;
@@ -8,6 +9,7 @@ public class User : IdentityUser
     public virtual string Username { get; set; }
     public virtual Role Role { get; set; }
     public virtual string? HashedPassword { get; set; }
+    public virtual IList<Claim> Claims { get; set; }
     public virtual IList<Post> PostHistory { get; set; }
     public virtual IList<Comment> CommentHistory { get; set; }
     public virtual long DateCreated { get; set; }
@@ -16,6 +18,7 @@ public class User : IdentityUser
     {
         PostHistory = new List<Post>();
         CommentHistory = new List<Comment>();
+        Claims = new List<Claim>();
     }
 
     public User(string id, string username, string hashedPassword, Role role, long dateCreated)
@@ -27,6 +30,7 @@ public class User : IdentityUser
         DateCreated = dateCreated;
         PostHistory = new List<Post>();
         CommentHistory = new List<Comment>();
+        Claims = new List<Claim>();
     }
 
     public virtual void AddPost(Post post)
