@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
+using Microsoft.AspNetCore.Identity;
+using Claim = System.Security.Claims.Claim;
 
 namespace BlogAPI.Models;
-using Microsoft.AspNetCore.Identity;
 
 public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
@@ -57,7 +57,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
         }
         catch (Exception e)
         {
-            return IdentityResult.Failed(new IdentityError() {Description = "Error occured: " + e});
+            return IdentityResult.Failed(new IdentityError {Description = "Error occured: " + e});
         }
     }
 
@@ -70,7 +70,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
         }
         catch (Exception e)
         {
-            return IdentityResult.Failed(new IdentityError() {Description = "Error occured: " + e});
+            return IdentityResult.Failed(new IdentityError {Description = "Error occured: " + e});
         }
     }
 
@@ -118,26 +118,36 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 
     public async Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await Task.FromResult(user.Claims);
     }
 
     public async Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        foreach (var claim in claims)
+        {
+            user.Claims.Add(claim);
+        } await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        if (!user.Claims.Contains(claim)) Console.WriteLine(claim.Value + " not found");
+        user.Claims.Remove(claim);
+        user.Claims.Add(newClaim);
+        await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        foreach (var claim in claims)
+        {
+            if (!user.Claims.Contains(claim)) Console.WriteLine(claim.Value + " not found");
+            user.Claims.Remove(claim);
+        } await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        return await _nHibernateHelper.GetUsersForClaim(claim);
     }
 }

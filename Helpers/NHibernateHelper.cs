@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using FluentNHibernate.Cfg;
@@ -237,6 +238,15 @@ public class NHibernateHelper : INhibernateHelper
                 .Where(r => r.Name.ToLowerInvariant() == roleName.ToLowerInvariant())
                 .ToListAsync();
             return roleToFind.FirstOrDefault();
+        }
+    }
+
+    public async Task<IList<User>> GetUsersForClaim(Claim claim)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            var listOfUsers = await session.Query<User>().Where(u => u.Claims.Contains(claim)).ToListAsync();
+            return listOfUsers;
         }
     }
 }
