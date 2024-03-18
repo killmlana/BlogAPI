@@ -1,9 +1,12 @@
+using System.Security.Authentication;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NHibernate;
 
 namespace BlogAPI.Controllers;
 
@@ -14,12 +17,14 @@ public class AuthController : ControllerBase
     private readonly NHibernateHelper _nHibernateHelper;
     private readonly AuthHelper _authHelper;
     private readonly UserManager<User> _manager;
+    private readonly SignInManager<User> _signInManager;
 
-    public AuthController(AuthHelper authHelper, NHibernateHelper nHibernateHelper, UserManager<User> manager)
+    public AuthController(AuthHelper authHelper, NHibernateHelper nHibernateHelper, UserManager<User> manager, SignInManager<User> signInManager)
     {
         _nHibernateHelper = nHibernateHelper;
         _authHelper = authHelper;
         _manager = manager;
+        _signInManager = signInManager;
     }
     
     [HttpPost("register")]
@@ -39,9 +44,10 @@ public class AuthController : ControllerBase
         }
     }
 
-    /*[HttpPost("login")]
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserDTO userDto)
     {
-        
-    }*/
+        await _authHelper.Login(userDto);
+        return Accepted();
+    }
 }

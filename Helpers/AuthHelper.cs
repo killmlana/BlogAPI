@@ -1,8 +1,11 @@
+using System.Security.Authentication;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using BlogAPI.Entities;
 using BlogAPI.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using NHibernate;
 
 namespace BlogAPI.Helpers;
@@ -12,23 +15,27 @@ public class AuthHelper
     private readonly NHibernateHelper _nHibernateHelper;
     private readonly BcryptHelper _bcryptHelper;
     private readonly RoleManager<Role> _roleManager;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
 
-    public AuthHelper(NHibernateHelper nHibernateHelper, BcryptHelper bcryptHelper, RoleManager<Role> roleManager)
+    public AuthHelper(NHibernateHelper nHibernateHelper, BcryptHelper bcryptHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager)
     {
         _nHibernateHelper = nHibernateHelper;
         _bcryptHelper = bcryptHelper;
         _roleManager = roleManager;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
     public async Task<User> CreateUser(UserDTO userDto)
     {
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        string Roleid = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        Roleid = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
+        string roleid = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        roleid = Regex.Replace(roleid, "[^0-9a-zA-Z]+", "");
         string hashedPassword = _bcryptHelper.Hash(userDto.password);
         if (await _roleManager.FindByNameAsync("User") == null)
         {
-            await _roleManager.CreateAsync(new Role(Roleid, "User".ToLowerInvariant()));
+            await _roleManager.CreateAsync(new Role(roleid, "User"));
         }
         var role = await _roleManager.FindByNameAsync("User");
         if (role == null) throw new QueryException("Role not found.");
@@ -36,16 +43,9 @@ public class AuthHelper
         return newUser;
     }
 
-    public User? Login(UserDTO userDto)
+    public async Task Login(UserDTO userDto)
     {
-        //opening Nhibernate session :3
-        var session = _nHibernateHelper.OpenSession();
-        var query = session.Query<User>().FirstOrDefault(e => e.Username == userDto.username);
-        if (query == null) return null;
-        if (_bcryptHelper.IsVerified(query, userDto.password))
-        {
-            return query;
-        }
-        return null;
+        var result = await _signInManager.PasswordSignInAsync(userDto.username, userDto.password, true, false);
+        if (!result.Succeeded) throw new AuthenticationException("Wrong username or password.");
     }
 }

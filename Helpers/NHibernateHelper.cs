@@ -34,7 +34,7 @@ public class NHibernateHelper : INhibernateHelper
         // this NHibernate tool takes a configuration (with mapping info in)
         // and exports a database schema from it
         new SchemaExport(config)
-            .Create(false, true);
+            .Create(false, false);
     }
 
     public ISession OpenSession()
@@ -123,8 +123,10 @@ public class NHibernateHelper : INhibernateHelper
     {
         using (var session = _sessionFactory.OpenSession())
         {
-            User? userToFind = await session.Query<User>().FirstOrDefaultAsync(u => u.Username.ToLowerInvariant() == name);
-            return userToFind;
+            var userToFind = await session.Query<User>()
+                .Where(r => r.Username.ToLowerInvariant() == name.ToLowerInvariant())
+                .ToListAsync();
+            return userToFind.FirstOrDefault();
         }
     }
 
@@ -135,7 +137,7 @@ public class NHibernateHelper : INhibernateHelper
             using (var session = _sessionFactory.OpenSession())
             using (var transaction = session.BeginTransaction())
             {
-                await session.MergeAsync(user);
+                await session.SaveOrUpdateAsync(user);
                 await transaction.CommitAsync();
             }
         } catch (Exception e)
@@ -231,8 +233,10 @@ public class NHibernateHelper : INhibernateHelper
     {
         using (var session = _sessionFactory.OpenSession())
         {
-            var roleToFind = await session.Query<Role>().FirstOrDefaultAsync(r => r.Name.ToLowerInvariant() == roleName);
-            return roleToFind;
+            var roleToFind = await session.Query<Role>()
+                .Where(r => r.Name.ToLowerInvariant() == roleName.ToLowerInvariant())
+                .ToListAsync();
+            return roleToFind.FirstOrDefault();
         }
     }
 }

@@ -16,6 +16,7 @@ static void AddPostsToUser(User user, params Post[] posts)
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();

@@ -1,10 +1,11 @@
+using System.Security.Claims;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 
 namespace BlogAPI.Models;
 using Microsoft.AspNetCore.Identity;
 
-public class CustomUserStore : IUserPasswordStore<User>
+public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
     private readonly NHibernateHelper _nHibernateHelper;
 
@@ -37,7 +38,7 @@ public class CustomUserStore : IUserPasswordStore<User>
 
     public async Task<string?> GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken)
     {
-        return await Task.FromResult(user.Username.ToLower().ToLowerInvariant());
+        return await Task.FromResult(user.Username.ToLowerInvariant());
     }
 
     public async Task SetNormalizedUserNameAsync(User user, string? normalizedName, CancellationToken cancellationToken)
@@ -114,4 +115,29 @@ public class CustomUserStore : IUserPasswordStore<User>
     }
 
     #endregion
+
+    public async Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
 }

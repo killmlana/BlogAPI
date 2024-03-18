@@ -91,6 +91,6 @@ public class CustomRoleStore : IRoleStore<Role>
 
     public async Task<Role?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
     {
-        return await _nHibernateHelper.FindByRoleName(normalizedRoleName.ToLowerInvariant());
+        return await _nHibernateHelper.FindByRoleName(normalizedRoleName);
     }
 }
