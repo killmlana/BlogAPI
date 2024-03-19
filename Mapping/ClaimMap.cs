@@ -10,8 +10,6 @@ public class ClaimMap : ClassMap<Claim>
     {
         Id().GeneratedBy.Assigned();
         Map(x => x.Issuer);
-        Map(x => x.Properties);
-        Map(x => x.Subject);
         Map(x => x.Type);
         Map(x => x.OriginalIssuer);
         Map(x => x.ValueType);

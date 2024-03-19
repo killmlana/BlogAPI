@@ -27,6 +27,7 @@ builder.Services.AddScoped<INhibernateHelper, NHibernateHelper>();
 builder.Services.AddScoped<IUserPasswordStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IRoleStore<Role>, CustomRoleStore>();
 builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();
+builder.Services.AddScoped<IUserClaimStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IBcryptHelper, BcryptHelper>();
 builder.Services.AddIdentity<User, Role>().AddUserStore<CustomUserStore>().AddRoleStore<CustomRoleStore>();
 //builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => builder.Configuration.Bind("JwtSettings", options)).AddCookie(options => builder.Configuration.Bind("CookieSettings", options));

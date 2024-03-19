@@ -8,10 +8,12 @@ namespace BlogAPI.Models;
 public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
     private readonly NHibernateHelper _nHibernateHelper;
+    private readonly CustomClaim _customClaim;
 
-    public CustomUserStore(NHibernateHelper userService)
+    public CustomUserStore(NHibernateHelper userService, CustomClaim customClaim)
     {
         _nHibernateHelper = userService;
+        _customClaim = customClaim;
     }
 
     #region UserStore
@@ -125,7 +127,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     {
         foreach (var claim in claims)
         {
-            user.Claims.Add(claim);
+            _customClaim.AddClaim(user, claim);
         } await _nHibernateHelper.UpdateUser(user);
     }
 
@@ -133,7 +135,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     {
         if (!user.Claims.Contains(claim)) Console.WriteLine(claim.Value + " not found");
         user.Claims.Remove(claim);
-        user.Claims.Add(newClaim);
+        _customClaim.AddClaim(user, newClaim);
         await _nHibernateHelper.UpdateUser(user);
     }
 
@@ -142,8 +144,9 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
         foreach (var claim in claims)
         {
             if (!user.Claims.Contains(claim)) Console.WriteLine(claim.Value + " not found");
-            user.Claims.Remove(claim);
-        } await _nHibernateHelper.UpdateUser(user);
+            _customClaim.AddClaim(user, claim);
+        } 
+        await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
