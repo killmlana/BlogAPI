@@ -23,6 +23,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<NHibernateHelper>();
 builder.Services.AddScoped<BcryptHelper>();
 builder.Services.AddScoped<AuthHelper>();
+builder.Services.AddScoped<CustomClaim>();
 builder.Services.AddScoped<INhibernateHelper, NHibernateHelper>();
 builder.Services.AddScoped<IUserPasswordStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IRoleStore<Role>, CustomRoleStore>();

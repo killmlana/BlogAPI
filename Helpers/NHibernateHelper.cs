@@ -245,8 +245,30 @@ public class NHibernateHelper : INhibernateHelper
     {
         using (var session = _sessionFactory.OpenSession())
         {
-            var listOfUsers = await session.Query<User>().Where(u => u.Claims.Contains(claim)).ToListAsync();
+            var listOfUsers = await session.Query<User>().Where(user =>
+                user.Claims.Any(customClaim => customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)).ToListAsync();
             return listOfUsers;
+        }
+    }
+
+    public bool UserHasClaim(User user, Claim claim)
+    {
+        foreach (var customClaim in user.Claims)
+        {
+            if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type) return true;
+        }
+
+        return false;
+    }
+
+    public void RemoveClaimFromUser(User user, Claim claim) //returns null if claim is not found
+    {
+        foreach (var customClaim in user.Claims)
+        {
+            if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)
+            {
+                user.Claims.Remove(customClaim);
+            }
         }
     }
 }

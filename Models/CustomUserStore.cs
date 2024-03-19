@@ -120,22 +120,28 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 
     public async Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
     {
-        return await Task.FromResult(user.Claims);
+        IList<Claim> list = new List<Claim>();
+        foreach (var claim in user.Claims)
+        {
+            list.Add(claim.ToClaim());
+        }
+
+        return list;
     }
 
     public async Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
         foreach (var claim in claims)
         {
-            _customClaim.AddClaim(user, claim);
+            user.AddClaim(new CustomClaim(){ClaimValue = claim.Value, ClaimType = claim.Type, UserId = user.Id});
         } await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
-        if (!user.Claims.Contains(claim)) Console.WriteLine(claim.Value + " not found");
-        user.Claims.Remove(claim);
-        _customClaim.AddClaim(user, newClaim);
+        if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
+        _nHibernateHelper.RemoveClaimFromUser(user, claim);
+        user.AddClaim(new CustomClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, UserId = user.Id});
         await _nHibernateHelper.UpdateUser(user);
     }
 
@@ -143,8 +149,8 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     {
         foreach (var claim in claims)
         {
-            if (!user.Claims.Contains(claim)) Console.WriteLine(claim.Value + " not found");
-            _customClaim.AddClaim(user, claim);
+            if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
+            _nHibernateHelper.RemoveClaimFromUser(user, claim);
         } 
         await _nHibernateHelper.UpdateUser(user);
     }
