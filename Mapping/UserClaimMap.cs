@@ -4,9 +4,9 @@ using FluentNHibernate.Mapping;
 
 namespace BlogAPI.Mapping;
 
-public class ClaimMap : ClassMap<CustomUserClaim>
+public class UserClaimMap : ClassMap<CustomUserClaim>
 {
-    public ClaimMap()
+    public UserClaimMap()
     {
         Id(claim => claim.Id);
         Map(claim => claim.ClaimValue);
