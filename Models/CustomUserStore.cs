@@ -9,12 +9,12 @@ namespace BlogAPI.Models;
 public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
     private readonly NHibernateHelper _nHibernateHelper;
-    private readonly CustomClaim _customClaim;
+    private readonly CustomUserClaim _customUserClaim;
 
-    public CustomUserStore(NHibernateHelper userService, CustomClaim customClaim)
+    public CustomUserStore(NHibernateHelper userService, CustomUserClaim customUserClaim)
     {
         _nHibernateHelper = userService;
-        _customClaim = customClaim;
+        _customUserClaim = customUserClaim;
     }
 
     #region UserStore
@@ -130,17 +130,17 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
         {
             string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
             id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-            user.AddClaim(new CustomClaim(){ClaimValue = claim.Value, ClaimType = claim.Type, User = user, UserId = user.Id , Id = id});
+            user.AddClaim(new CustomUserClaim(){ClaimValue = claim.Value, ClaimType = claim.Type, User = user, UserId = user.Id , Id = id});
         } await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
-        if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
+        if (!await _nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
         _nHibernateHelper.RemoveClaimFromUser(user, claim);
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        user.AddClaim(new CustomClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, User = user, UserId = user.Id ,Id = id});
+        user.AddClaim(new CustomUserClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, User = user, UserId = user.Id ,Id = id});
         await _nHibernateHelper.UpdateUser(user);
     }
 
@@ -148,7 +148,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     {
         foreach (var claim in claims)
         {
-            if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
+            if (!await _nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
             _nHibernateHelper.RemoveClaimFromUser(user, claim);
         } 
         await _nHibernateHelper.UpdateUser(user);

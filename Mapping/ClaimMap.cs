@@ -4,7 +4,7 @@ using FluentNHibernate.Mapping;
 
 namespace BlogAPI.Mapping;
 
-public class ClaimMap : ClassMap<CustomClaim>
+public class ClaimMap : ClassMap<CustomUserClaim>
 {
     public ClaimMap()
     {
