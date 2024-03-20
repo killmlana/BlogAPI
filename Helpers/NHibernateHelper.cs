@@ -265,13 +265,20 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public void RemoveClaimFromUser(User user, Claim claim) //returns null if claim is not found
+    public async Task RemoveClaimFromUser(User user, Claim claim)
     {
-        foreach (var customClaim in user.Claims)
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())    
         {
-            if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)
+            var userToCheck = await session.GetAsync<User>(user.Id);
+            foreach (var customClaim in userToCheck.Claims)
             {
-                user.Claims.Remove(customClaim);
+                if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)
+                {
+                    userToCheck.Claims.Remove(customClaim);
+                    await session.SaveOrUpdateAsync(userToCheck);
+                    await transaction.CommitAsync();
+                }
             }
         }
     }

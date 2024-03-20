@@ -137,7 +137,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
         if (!await _nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
-        _nHibernateHelper.RemoveClaimFromUser(user, claim);
+        await _nHibernateHelper.RemoveClaimFromUser(user, claim);
         string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
         id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
         user.AddClaim(new CustomUserClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, User = user, UserId = user.Id ,Id = id});
@@ -149,9 +149,8 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
         foreach (var claim in claims)
         {
             if (!await _nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
-            _nHibernateHelper.RemoveClaimFromUser(user, claim);
+            await _nHibernateHelper.RemoveClaimFromUser(user, claim);
         } 
-        await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
