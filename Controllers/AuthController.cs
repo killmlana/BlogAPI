@@ -40,6 +40,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             // Handle registration errors
+            throw;
             return BadRequest($"Registration failed: {ex.Message}");
         }
     }

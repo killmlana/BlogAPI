@@ -8,9 +8,10 @@ public class ClaimMap : ClassMap<CustomClaim>
 {
     public ClaimMap()
     {
-        Id().GeneratedBy.Assigned();
+        Id(claim => claim.Id);
         Map(claim => claim.ClaimValue);
         Map(claim => claim.ClaimType);
-        References<User>(x => x.UserId).Column("UserId");
+        Map(claim => claim.UserId);
+        References(x => x.User);
     }
 }

@@ -23,4 +23,10 @@
       <Folder Include="App_Data\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="IdentityModel">
+        <HintPath>..\..\..\.nuget\packages\identitymodel\6.2.0\lib\net6.0\IdentityModel.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

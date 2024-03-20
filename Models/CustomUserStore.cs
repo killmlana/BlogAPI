@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using Microsoft.AspNetCore.Identity;
@@ -120,20 +121,16 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 
     public async Task<IList<Claim>> GetClaimsAsync(User user, CancellationToken cancellationToken)
     {
-        IList<Claim> list = new List<Claim>();
-        foreach (var claim in user.Claims)
-        {
-            list.Add(claim.ToClaim());
-        }
-
-        return list;
+        return await _nHibernateHelper.GetClaimsFromUser(user);
     }
 
     public async Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
         foreach (var claim in claims)
         {
-            user.AddClaim(new CustomClaim(){ClaimValue = claim.Value, ClaimType = claim.Type, UserId = user.Id});
+            string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
+            user.AddClaim(new CustomClaim(){ClaimValue = claim.Value, ClaimType = claim.Type, User = user, UserId = user.Id , Id = id});
         } await _nHibernateHelper.UpdateUser(user);
     }
 
@@ -141,7 +138,9 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     {
         if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
         _nHibernateHelper.RemoveClaimFromUser(user, claim);
-        user.AddClaim(new CustomClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, UserId = user.Id});
+        string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
+        user.AddClaim(new CustomClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, User = user, UserId = user.Id ,Id = id});
         await _nHibernateHelper.UpdateUser(user);
     }
 

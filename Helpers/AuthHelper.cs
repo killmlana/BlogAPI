@@ -1,8 +1,10 @@
 using System.Security.Authentication;
+using System.Security.Claims;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using BlogAPI.Entities;
 using BlogAPI.Models;
+using IdentityModel;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

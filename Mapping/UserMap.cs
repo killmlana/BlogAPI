@@ -12,7 +12,7 @@ public class UserMap : ClassMap<User>
         Map(x => x.Username);
         Map(x => x.HashedPassword);
         References(x => x.Role);
-        HasManyToMany<CustomClaim>(x => x.Claims).Table("UserToClaim").Inverse().Cascade.All();
+        HasMany(x => x.Claims).Inverse();
         Map(x => x.DateCreated);
         HasMany(x => x.PostHistory).Inverse().Cascade.All();
         HasMany(x => x.CommentHistory).Inverse().Cascade.All();

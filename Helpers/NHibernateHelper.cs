@@ -271,5 +271,20 @@ public class NHibernateHelper : INhibernateHelper
             }
         }
     }
+
+    public async Task<IList<Claim>> GetClaimsFromUser(User user)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            var userToGet = await session.GetAsync<User>(user.Id);
+            var listOfClaims = new List<Claim>();
+            foreach (var customClaim in userToGet.Claims)
+            {
+                listOfClaims.Add(customClaim.ToClaim());
+            }
+
+            return listOfClaims;
+        }
+    }
 }
             
