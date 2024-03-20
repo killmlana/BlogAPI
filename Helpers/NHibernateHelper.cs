@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using FluentNHibernate.Cfg;
@@ -41,6 +42,13 @@ public class NHibernateHelper : INhibernateHelper
     public ISession OpenSession()
     {
         return _sessionFactory.OpenSession();
+    }
+
+    public string GenerateGuid()
+    {
+        string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+        id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
+        return id;
     }
     
     public ISession GetSession()
@@ -295,6 +303,40 @@ public class NHibernateHelper : INhibernateHelper
             }
 
             return listOfClaims;
+        }
+    }
+
+    public async Task ReplaceClaimFromUser(User user, Claim claim, Claim newClaim)
+    {
+        if (!await UserHasClaim(user, claim)) throw new NullReferenceException(claim.Value);
+        using (var session = _sessionFactory.OpenSession())
+        {
+            var userToUpdate = await session.GetAsync<User>(user.Id);
+            await RemoveClaimFromUser(userToUpdate, claim);
+            await AddClaimsToUser(user, new List<Claim>() { newClaim });
+        }
+    }
+
+    public async Task AddClaimsToUser(User user, IEnumerable<Claim> claims)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())    
+        {
+            var userFromDb = await session.GetAsync<User>(user.Id);
+            foreach (var claim in claims)
+            {
+                if (await UserHasClaim(user, claim)) continue;
+                userFromDb.Claims.Add(new CustomUserClaim()
+                {
+                    User = userFromDb,
+                    ClaimType = claim.Type,
+                    ClaimValue = claim.Value,
+                    UserId = userFromDb.Id,
+                    Id = GenerateGuid()
+                });
+            }
+            await session.SaveOrUpdateAsync(userFromDb);
+            await transaction.CommitAsync();
         }
     }
 }
