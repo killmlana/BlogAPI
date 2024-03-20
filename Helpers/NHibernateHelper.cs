@@ -353,6 +353,8 @@ public class NHibernateHelper : INhibernateHelper
 
     #endregion
 
+    #region RoleClaimStore
+
     public async Task<IList<Claim>> GetClaimsFromRole(Role role)
     {
         using (var session = _sessionFactory.OpenSession())
@@ -417,5 +419,7 @@ public class NHibernateHelper : INhibernateHelper
             await transaction.CommitAsync();
         }
     }
+
+    #endregion
 }
             
