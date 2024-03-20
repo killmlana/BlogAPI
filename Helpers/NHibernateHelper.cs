@@ -374,6 +374,7 @@ public class NHibernateHelper : INhibernateHelper
         using (var transaction = session.BeginTransaction())
         {
             var roleFromDb = await session.GetAsync<Role>(role.Id);
+            if (await RoleHasClaim(role, claim)) throw new Exception("Role possesses the claim already.");
             roleFromDb.Claims.Add(new CustomRoleClaim()
             {
                 Role = roleFromDb,
