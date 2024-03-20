@@ -30,24 +30,31 @@ public class AuthHelper
     }
     public async Task<User> CreateUser(UserDTO userDto)
     {
-        string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        string roleid = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        roleid = Regex.Replace(roleid, "[^0-9a-zA-Z]+", "");
         string hashedPassword = _bcryptHelper.Hash(userDto.password);
         if (await _roleManager.FindByNameAsync("User") == null)
         {
-            await _roleManager.CreateAsync(new Role(roleid, "User"));
+            await _roleManager.CreateAsync(new Role(_nHibernateHelper.GenerateGuid(), "User"));
         }
         var role = await _roleManager.FindByNameAsync("User");
         if (role == null) throw new QueryException("Role not found.");
-        var newUser = new User(id, userDto.username, hashedPassword, role, DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+        var newUser = new User(
+            _nHibernateHelper.GenerateGuid(),
+            userDto.username,
+            hashedPassword,
+            role,
+            DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            );
         return newUser;
     }
 
     public async Task Login(UserDTO userDto)
     {
-        var result = await _signInManager.PasswordSignInAsync(userDto.username, userDto.password, true, false);
+        var result = await _signInManager.PasswordSignInAsync(
+            userDto.username,
+            userDto.password,
+            true,
+            false
+            );
         if (!result.Succeeded) throw new AuthenticationException("Wrong username or password.");
     }
 }
