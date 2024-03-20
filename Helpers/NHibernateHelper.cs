@@ -16,7 +16,9 @@ namespace BlogAPI.Helpers;
 public class NHibernateHelper : INhibernateHelper
 {
 
-    private ISessionFactory _sessionFactory;
+    private readonly ISessionFactory _sessionFactory;
+
+    #region SessionManagement
 
     public NHibernateHelper()
     {
@@ -60,6 +62,8 @@ public class NHibernateHelper : INhibernateHelper
     {
         _sessionFactory.Dispose();
     }
+
+    #endregion
 
     #region UserStore
 
@@ -157,6 +161,8 @@ public class NHibernateHelper : INhibernateHelper
 
     #endregion
 
+    #region RoleStore
+
     public async Task CreateRole(Role role)
     {
         try
@@ -249,6 +255,10 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
+    #endregion
+
+    #region UserClaimStore
+
     public async Task<IList<User>> GetUsersForClaim(Claim claim)
     {
         using (var session = _sessionFactory.OpenSession())
@@ -337,6 +347,23 @@ public class NHibernateHelper : INhibernateHelper
             }
             await session.SaveOrUpdateAsync(userFromDb);
             await transaction.CommitAsync();
+        }
+    }
+
+    #endregion
+
+    public async Task<IList<Claim>> GetClaimsFromRole(Role role)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            var roleToGet = await session.GetAsync<Role>(role.Id);
+            var listOfClaims = new List<Claim>();
+            foreach (var customClaim in roleToGet.Claims)
+            {
+                listOfClaims.Add(customClaim.ToClaim());
+            }
+
+            return listOfClaims;
         }
     }
 }

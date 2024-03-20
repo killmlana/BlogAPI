@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BlogAPI.Models;
 
-public class CustomRoleStore : IRoleStore<Role>, IRoleClaimStore<Role>
+public class CustomRoleStore : IRoleClaimStore<Role>
 {
     private readonly NHibernateHelper _nHibernateHelper;
 
@@ -95,17 +95,17 @@ public class CustomRoleStore : IRoleStore<Role>, IRoleClaimStore<Role>
         return await _nHibernateHelper.FindByRoleName(normalizedRoleName);
     }
 
-    public async Task<IList<Claim>> GetClaimsAsync(Role role, CancellationToken cancellationToken = new CancellationToken())
+    public async Task<IList<Claim>> GetClaimsAsync(Role role, CancellationToken cancellationToken)
+    {
+        return await _nHibernateHelper.GetClaimsFromRole(role);
+    }
+
+    public async Task AddClaimAsync(Role role, Claim claim, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
 
-    public async Task AddClaimAsync(Role role, Claim claim, CancellationToken cancellationToken = new CancellationToken())
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task RemoveClaimAsync(Role role, Claim claim, CancellationToken cancellationToken = new CancellationToken())
+    public async Task RemoveClaimAsync(Role role, Claim claim, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
