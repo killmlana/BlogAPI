@@ -102,7 +102,7 @@ public class CustomRoleStore : IRoleClaimStore<Role>
 
     public async Task AddClaimAsync(Role role, Claim claim, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _nHibernateHelper.AddClaimToRole(role, claim);
     }
 
     public async Task RemoveClaimAsync(Role role, Claim claim, CancellationToken cancellationToken)

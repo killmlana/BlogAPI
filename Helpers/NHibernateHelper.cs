@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
+using BlogAPI.Models;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
 using FluentNHibernate.Conventions.AcceptanceCriteria;
@@ -364,6 +365,38 @@ public class NHibernateHelper : INhibernateHelper
             }
 
             return listOfClaims;
+        }
+    }
+
+    public async Task AddClaimToRole(Role role, Claim claim)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
+        {
+            var roleFromDb = await session.GetAsync<Role>(role.Id);
+            roleFromDb.Claims.Add(new CustomRoleClaim()
+            {
+                Role = roleFromDb,
+                ClaimType = claim.Value,
+                ClaimValue = claim.Value,
+                Id = GenerateGuid(),
+                RoleId = role.Id
+            });
+            await session.SaveOrUpdateAsync(roleFromDb);
+            await transaction.CommitAsync();
+        }
+    }
+
+    public async Task<bool> RoleHasClaim(Role role, Claim claim)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            var roleToCheck = await session.GetAsync<Role>(role.Id);
+            foreach (var customClaim in roleToCheck.Claims)
+            {
+                if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type) return true;
+            }
+            return false;
         }
     }
 }
