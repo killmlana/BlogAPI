@@ -374,7 +374,7 @@ public class NHibernateHelper : INhibernateHelper
         using (var transaction = session.BeginTransaction())
         {
             var roleFromDb = await session.GetAsync<Role>(role.Id);
-            if (await RoleHasClaim(role, claim)) throw new Exception("Role possesses the claim already.");
+            if (await RoleHasClaim(role, claim)) throw new Exception("Role possesses " + claim.Value + " already.");
             roleFromDb.Claims.Add(new CustomRoleClaim()
             {
                 Role = roleFromDb,
@@ -398,6 +398,23 @@ public class NHibernateHelper : INhibernateHelper
                 if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type) return true;
             }
             return false;
+        }
+    }
+
+    public async Task RemoveClaimFromRole(Role role, Claim claim)
+    {
+        if (!await RoleHasClaim(role, claim)) throw new NullReferenceException(claim.Value);
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())    
+        {
+            var roleFromDb = await session.GetAsync<Role>(role.Id);
+            foreach (var customClaim in roleFromDb.Claims)
+            {
+                if (!(customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)) continue;
+                roleFromDb.Claims.Remove(customClaim);
+            }
+            await session.SaveOrUpdateAsync(roleFromDb);
+            await transaction.CommitAsync();
         }
     }
 }
