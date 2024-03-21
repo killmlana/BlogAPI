@@ -9,12 +9,10 @@ namespace BlogAPI.Models;
 public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
     private readonly NHibernateHelper _nHibernateHelper;
-    private readonly CustomClaim _customClaim;
 
-    public CustomUserStore(NHibernateHelper userService, CustomClaim customClaim)
+    public CustomUserStore(NHibernateHelper userService)
     {
         _nHibernateHelper = userService;
-        _customClaim = customClaim;
     }
 
     #region UserStore
@@ -126,32 +124,21 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 
     public async Task AddClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-        foreach (var claim in claims)
-        {
-            string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-            user.AddClaim(new CustomClaim(){ClaimValue = claim.Value, ClaimType = claim.Type, User = user, UserId = user.Id , Id = id});
-        } await _nHibernateHelper.UpdateUser(user);
+        await _nHibernateHelper.AddClaimsToUser(user, claims);
     }
 
     public async Task ReplaceClaimAsync(User user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
-        if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
-        _nHibernateHelper.RemoveClaimFromUser(user, claim);
-        string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        user.AddClaim(new CustomClaim(){ClaimValue = newClaim.Value, ClaimType = newClaim.Type, User = user, UserId = user.Id ,Id = id});
-        await _nHibernateHelper.UpdateUser(user);
+        await _nHibernateHelper.ReplaceClaimFromUser(user, claim, newClaim);
     }
 
     public async Task RemoveClaimsAsync(User user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
         foreach (var claim in claims)
         {
-            if (!_nHibernateHelper.UserHasClaim(user, claim)) Console.WriteLine(claim.Value + " not found");
-            _nHibernateHelper.RemoveClaimFromUser(user, claim);
+            if (!await _nHibernateHelper.UserHasClaim(user, claim)) continue;
+            await _nHibernateHelper.RemoveClaimFromUser(user, claim);
         } 
-        await _nHibernateHelper.UpdateUser(user);
     }
 
     public async Task<IList<User>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)

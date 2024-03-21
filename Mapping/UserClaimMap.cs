@@ -4,14 +4,13 @@ using FluentNHibernate.Mapping;
 
 namespace BlogAPI.Mapping;
 
-public class ClaimMap : ClassMap<CustomClaim>
+public class UserClaimMap : ClassMap<CustomUserClaim>
 {
-    public ClaimMap()
+    public UserClaimMap()
     {
         Id(claim => claim.Id);
         Map(claim => claim.ClaimValue);
         Map(claim => claim.ClaimType);
-        Map(claim => claim.UserId);
-        References(x => x.User);
+        References(x => x.User, "UserId");
     }
 }
