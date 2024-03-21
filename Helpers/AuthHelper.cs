@@ -37,6 +37,7 @@ public class AuthHelper
         }
         var role = await _roleManager.FindByNameAsync("User");
         if (role == null) throw new QueryException("Role not found.");
+        await _roleManager.AddClaimAsync(role, new Claim(JwtClaimTypes.Role, role.Name));
         var newUser = new User(
             _nHibernateHelper.GenerateGuid(),
             userDto.username,

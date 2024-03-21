@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using BlogAPI.Models;
 using Microsoft.AspNetCore.Identity;

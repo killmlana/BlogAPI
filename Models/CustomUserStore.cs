@@ -9,12 +9,10 @@ namespace BlogAPI.Models;
 public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
     private readonly NHibernateHelper _nHibernateHelper;
-    private readonly CustomUserClaim _customUserClaim;
 
-    public CustomUserStore(NHibernateHelper userService, CustomUserClaim customUserClaim)
+    public CustomUserStore(NHibernateHelper userService)
     {
         _nHibernateHelper = userService;
-        _customUserClaim = customUserClaim;
     }
 
     #region UserStore

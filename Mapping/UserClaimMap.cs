@@ -11,7 +11,6 @@ public class UserClaimMap : ClassMap<CustomUserClaim>
         Id(claim => claim.Id);
         Map(claim => claim.ClaimValue);
         Map(claim => claim.ClaimType);
-        Map(claim => claim.UserId);
-        References(x => x.User);
+        References(x => x.User, "UserId");
     }
 }

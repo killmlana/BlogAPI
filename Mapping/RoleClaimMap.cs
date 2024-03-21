@@ -10,7 +10,6 @@ public class RoleClaimMap : ClassMap<CustomRoleClaim>
         Id(claim => claim.Id);
         Map(claim => claim.ClaimValue);
         Map(claim => claim.ClaimType);
-        Map(claim => claim.RoleId);
-        References(x => x.Role);
+        References(x => x.Role, "RoleId");
     }
 }

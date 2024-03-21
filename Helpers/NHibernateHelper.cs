@@ -5,7 +5,6 @@ using BlogAPI.Entities;
 using BlogAPI.Models;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
-using FluentNHibernate.Conventions.AcceptanceCriteria;
 using NHibernate;
 using NHibernate.Cfg;
 using NHibernate.Linq;
@@ -78,7 +77,7 @@ public class NHibernateHelper : INhibernateHelper
                 var userToUpdate = await session.GetAsync<User>(user.Id);
                 if (userToUpdate == null)
                 {
-                    throw new QueryException("No role found.");
+                    throw new QueryException("No user found.");
                 }
                 userToUpdate.Username = username;
                 await session.SaveOrUpdateAsync(userToUpdate);
@@ -171,7 +170,7 @@ public class NHibernateHelper : INhibernateHelper
             using (var session = _sessionFactory.OpenSession())
             using (var transaction = session.BeginTransaction())
             {
-                await session.MergeAsync(role);
+                await session.SaveOrUpdateAsync(role);
                 await transaction.CommitAsync();
             }
         } catch (Exception e)
@@ -265,7 +264,11 @@ public class NHibernateHelper : INhibernateHelper
         using (var session = _sessionFactory.OpenSession())
         {
             var listOfUsers = await session.Query<User>().Where(user =>
-                user.Claims.Any(customClaim => customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)).ToListAsync();
+                user.Claims.Any(customClaim => 
+                    customClaim.ClaimValue == claim.Value
+                                               && 
+                    customClaim.ClaimType == claim.Type
+                    )).ToListAsync();
             return listOfUsers;
         }
     }
@@ -289,13 +292,12 @@ public class NHibernateHelper : INhibernateHelper
         using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())    
         {
-            var userToCheck = await session.GetAsync<User>(user.Id);
-            foreach (var customClaim in userToCheck.Claims)
+            foreach (var customClaim in user.Claims)
             {
                 if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)
                 {
-                    userToCheck.Claims.Remove(customClaim);
-                    await session.SaveOrUpdateAsync(userToCheck);
+                    user.Claims.Remove(customClaim);
+                    await session.SaveOrUpdateAsync(user);
                     await transaction.CommitAsync();
                 }
             }
@@ -337,7 +339,7 @@ public class NHibernateHelper : INhibernateHelper
             foreach (var claim in claims)
             {
                 if (await UserHasClaim(user, claim)) continue;
-                userFromDb.Claims.Add(new CustomUserClaim()
+                var customUserClaim = (new CustomUserClaim()
                 {
                     User = userFromDb,
                     ClaimType = claim.Type,
@@ -345,9 +347,9 @@ public class NHibernateHelper : INhibernateHelper
                     UserId = userFromDb.Id,
                     Id = GenerateGuid()
                 });
+                await session.SaveOrUpdateAsync(customUserClaim);
+                await transaction.CommitAsync();
             }
-            await session.SaveOrUpdateAsync(userFromDb);
-            await transaction.CommitAsync();
         }
     }
 
@@ -375,17 +377,16 @@ public class NHibernateHelper : INhibernateHelper
         using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())
         {
-            var roleFromDb = await session.GetAsync<Role>(role.Id);
             if (await RoleHasClaim(role, claim)) throw new Exception("Role possesses " + claim.Value + " already.");
-            roleFromDb.Claims.Add(new CustomRoleClaim()
+            var customRoleClaim = new CustomRoleClaim()
             {
-                Role = roleFromDb,
+                Role = role,
                 ClaimType = claim.Value,
                 ClaimValue = claim.Value,
                 Id = GenerateGuid(),
                 RoleId = role.Id
-            });
-            await session.SaveOrUpdateAsync(roleFromDb);
+            };
+            await session.SaveOrUpdateAsync(customRoleClaim);
             await transaction.CommitAsync();
         }
     }
@@ -409,14 +410,13 @@ public class NHibernateHelper : INhibernateHelper
         using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())    
         {
-            var roleFromDb = await session.GetAsync<Role>(role.Id);
-            foreach (var customClaim in roleFromDb.Claims)
+            foreach (var customClaim in role.Claims)
             {
                 if (!(customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)) continue;
-                roleFromDb.Claims.Remove(customClaim);
+                role.Claims.Remove(customClaim);
+                await session.SaveOrUpdateAsync(role);
+                await transaction.CommitAsync();
             }
-            await session.SaveOrUpdateAsync(roleFromDb);
-            await transaction.CommitAsync();
         }
     }
 
