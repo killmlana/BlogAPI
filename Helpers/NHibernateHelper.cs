@@ -145,17 +145,11 @@ public class NHibernateHelper : INhibernateHelper
 
     public async Task CreateUser(User user)
     {
-        try
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
         {
-            using (var session = _sessionFactory.OpenSession())
-            using (var transaction = session.BeginTransaction())
-            {
-                await session.SaveOrUpdateAsync(user);
-                await transaction.CommitAsync();
-            }
-        } catch (Exception e)
-        {
-            throw;
+            await session.SaveOrUpdateAsync(user);
+            await transaction.CommitAsync();
         }
     } 
 
@@ -377,17 +371,19 @@ public class NHibernateHelper : INhibernateHelper
         using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())
         {
-            if (await RoleHasClaim(role, claim)) throw new Exception("Role possesses " + claim.Value + " already.");
-            var customRoleClaim = new CustomRoleClaim()
+            if (!await RoleHasClaim(role, claim))
             {
-                Role = role,
-                ClaimType = claim.Value,
-                ClaimValue = claim.Value,
-                Id = GenerateGuid(),
-                RoleId = role.Id
-            };
-            await session.SaveOrUpdateAsync(customRoleClaim);
-            await transaction.CommitAsync();
+                var customRoleClaim = new CustomRoleClaim()
+                {
+                    Role = role,
+                    ClaimType = claim.Type,
+                    ClaimValue = claim.Value,
+                    Id = GenerateGuid(),
+                    RoleId = role.Id
+                };
+                await session.SaveOrUpdateAsync(customRoleClaim);
+                await transaction.CommitAsync();
+            }
         }
     }
 
