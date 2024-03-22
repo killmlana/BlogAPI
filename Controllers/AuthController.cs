@@ -33,6 +33,8 @@ public class AuthController : ControllerBase
         try
         {
             // Register the user
+            if (await _manager.FindByNameAsync(userDto.username.ToLowerInvariant()) != null)
+                throw new Exception("User already exists.");
             var user = await _authHelper.CreateUser(userDto);
             await _manager.CreateAsync(user);
             return Accepted();
