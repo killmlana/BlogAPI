@@ -265,9 +265,9 @@ public class NHibernateHelper : INhibernateHelper
         {
             var listOfUsers = await session.Query<User>().Where(user =>
                 user.Claims.Any(customClaim => 
-                    customClaim.ClaimValue == claim.Value
+                    customClaim.ClaimValue.ToLowerInvariant() == claim.Value.ToLowerInvariant()
                                                && 
-                    customClaim.ClaimType == claim.Type
+                    customClaim.ClaimType.ToLowerInvariant() == claim.Type.ToLowerInvariant()
                     )).ToListAsync();
             return listOfUsers;
         }
@@ -280,7 +280,7 @@ public class NHibernateHelper : INhibernateHelper
             var userToCheck = await session.GetAsync<User>(user.Id);
             foreach (var customClaim in userToCheck.Claims)
             {
-                if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type) return true;
+                if (customClaim.ClaimValue.ToLowerInvariant() == claim.Value.ToLowerInvariant() && customClaim.ClaimType.ToLowerInvariant() == claim.Type.ToLowerInvariant()) return true;
             }
 
             return false;
@@ -294,7 +294,7 @@ public class NHibernateHelper : INhibernateHelper
         {
             foreach (var customClaim in user.Claims)
             {
-                if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)
+                if (customClaim.ClaimValue.ToLowerInvariant() == claim.Value.ToLowerInvariant() && customClaim.ClaimType.ToLowerInvariant() == claim.Type.ToLowerInvariant())
                 {
                     user.Claims.Remove(customClaim);
                     await session.SaveOrUpdateAsync(user);
@@ -398,7 +398,10 @@ public class NHibernateHelper : INhibernateHelper
             var roleToCheck = await session.GetAsync<Role>(role.Id);
             foreach (var customClaim in roleToCheck.Claims)
             {
-                if (customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type) return true;
+                if (customClaim.ClaimValue.ToLowerInvariant() == claim.Value.ToLowerInvariant() && customClaim.ClaimType.ToLowerInvariant() == claim.Type.ToLowerInvariant())
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -412,7 +415,7 @@ public class NHibernateHelper : INhibernateHelper
         {
             foreach (var customClaim in role.Claims)
             {
-                if (!(customClaim.ClaimValue == claim.Value && customClaim.ClaimType == claim.Type)) continue;
+                if (!(customClaim.ClaimValue.ToLowerInvariant() == claim.Value.ToLowerInvariant() && customClaim.ClaimType.ToLowerInvariant() == claim.Type.ToLowerInvariant())) continue;
                 role.Claims.Remove(customClaim);
                 await session.SaveOrUpdateAsync(role);
                 await transaction.CommitAsync();
