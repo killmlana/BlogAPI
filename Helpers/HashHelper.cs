@@ -10,7 +10,7 @@ namespace BlogAPI.Helpers;
 
 //TODO fix memory issue with hashing passwords.
 
-public class BcryptHelper : IBcryptHelper
+public class HashHelper : IHashHelper
 {   
     
     //Method for salting and hashing the password.

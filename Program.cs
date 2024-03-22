@@ -19,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<NHibernateHelper>();
-builder.Services.AddScoped<BcryptHelper>();
+builder.Services.AddScoped<HashHelper>();
 builder.Services.AddScoped<AuthHelper>();
 builder.Services.AddScoped<CustomUserClaim>();
 builder.Services.AddScoped<CustomRoleClaim>();
@@ -30,7 +30,7 @@ builder.Services.AddScoped<IUserPasswordStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IRoleStore<Role>, CustomRoleStore>();
 builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();
 builder.Services.AddScoped<IUserClaimStore<User>, CustomUserStore>();
-builder.Services.AddScoped<IBcryptHelper, BcryptHelper>();
+builder.Services.AddScoped<IHashHelper, HashHelper>();
 builder.Services.AddIdentity<User, Role>().AddUserStore<CustomUserStore>().AddRoleStore<CustomRoleStore>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
