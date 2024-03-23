@@ -6,21 +6,21 @@ namespace BlogAPI.Models;
 
 public class CustomPasswordHasher : IPasswordHasher<User>
 {
-    private readonly BcryptHelper _bcryptHelper;
+    private readonly HashHelper _hashHelper;
 
-    public CustomPasswordHasher(BcryptHelper bcryptHelper)
+    public CustomPasswordHasher(HashHelper hashHelper)
     {
-        _bcryptHelper = bcryptHelper;
+        _hashHelper = hashHelper;
     }
 
     public string HashPassword(User user, string password)
     {
-        return _bcryptHelper.Hash(password);
+        return _hashHelper.Hash(password);
     }
 
     public PasswordVerificationResult VerifyHashedPassword(User user, string hashedPassword, string providedPassword)
     {
-        if (_bcryptHelper.IsVerified(user, providedPassword)) return PasswordVerificationResult.Success;
+        if (_hashHelper.IsVerified(user, providedPassword)) return PasswordVerificationResult.Success;
         return PasswordVerificationResult.Failed;
     }
 }

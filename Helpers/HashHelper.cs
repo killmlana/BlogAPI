@@ -1,16 +1,12 @@
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
-using BlogAPI.Models;
 
 
 namespace BlogAPI.Helpers;
 
 //TODO fix memory issue with hashing passwords.
 
-public class BcryptHelper : IBcryptHelper
+public class HashHelper : IHashHelper
 {   
     
     //Method for salting and hashing the password.

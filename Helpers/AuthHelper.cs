@@ -1,13 +1,9 @@
 using System.Security.Authentication;
 using System.Security.Claims;
-using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using BlogAPI.Entities;
 using BlogAPI.Models;
 using IdentityModel;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using NHibernate;
 
 namespace BlogAPI.Helpers;
@@ -15,22 +11,22 @@ namespace BlogAPI.Helpers;
 public class AuthHelper
 {
     private readonly NHibernateHelper _nHibernateHelper;
-    private readonly BcryptHelper _bcryptHelper;
+    private readonly HashHelper _hashHelper;
     private readonly RoleManager<Role> _roleManager;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
 
-    public AuthHelper(NHibernateHelper nHibernateHelper, BcryptHelper bcryptHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager)
+    public AuthHelper(NHibernateHelper nHibernateHelper, HashHelper hashHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager)
     {
         _nHibernateHelper = nHibernateHelper;
-        _bcryptHelper = bcryptHelper;
+        _hashHelper = hashHelper;
         _roleManager = roleManager;
         _userManager = userManager;
         _signInManager = signInManager;
     }
     public async Task<User> CreateUser(UserDTO userDto)
     {
-        string hashedPassword = _bcryptHelper.Hash(userDto.password);
+        string hashedPassword = _hashHelper.Hash(userDto.password);
         if (await _roleManager.FindByNameAsync("User") == null)
         {
             await _roleManager.CreateAsync(new Role(_nHibernateHelper.GenerateGuid(), "User"));

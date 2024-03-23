@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using Microsoft.AspNetCore.Identity;
