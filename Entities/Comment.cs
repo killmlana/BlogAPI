@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
-
 namespace BlogAPI.Entities;
 
 public class Comment
