@@ -17,6 +17,7 @@ static void AddPostsToUser(User user, params Post[] posts)
 }
 
 var builder = WebApplication.CreateBuilder(args);
+var secret = builder.Configuration["JWT:Signing-Key"];
 
 
 // Add services to the container.
@@ -46,7 +47,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
          ValidateIssuerSigningKey = true,
          ValidIssuer = builder.Configuration["JWT:Issuer"],
          ValidAudience = builder.Configuration["JWT:Audience"],
-         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Signing-Key"]))
+         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
      };
 });
 

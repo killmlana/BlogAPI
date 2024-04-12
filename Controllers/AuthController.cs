@@ -44,9 +44,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] UserDTO userDto)
+    public async Task<string> Login([FromBody] UserDTO userDto)
     {
-        await _authHelper.Login(userDto);
-        return Accepted();
+        var user = await _authHelper.Login(userDto);
+        return await _authHelper.GenerateJwt(user);
     }
 }
