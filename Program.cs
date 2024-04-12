@@ -1,8 +1,12 @@
+using System.Configuration;
+using System.Text;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 static void AddPostsToUser(User user, params Post[] posts)
 {
@@ -32,6 +36,19 @@ builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();
 builder.Services.AddScoped<IUserClaimStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IHashHelper, HashHelper>();
 builder.Services.AddIdentity<User, Role>().AddUserStore<CustomUserStore>().AddRoleStore<CustomRoleStore>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+         ValidateIssuer = false, //change to true in prod
+         ValidateAudience = false, //change to true in prod
+         ValidateLifetime = true,
+         ValidateIssuerSigningKey = true,
+         ValidIssuer = builder.Configuration["JWT:Issuer"],
+         ValidAudience = builder.Configuration["JWT:Audience"],
+         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Signing-Key"]))
+     };
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
