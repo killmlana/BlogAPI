@@ -72,7 +72,11 @@ public class AuthHelper
         var key = Encoding.UTF8.GetBytes(_configuration["JWT:Signing-Key"]);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(await _userManager.GetClaimsAsync(user)),
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(JwtClaimTypes.Id, user.Id),
+                new Claim(JwtClaimTypes.Role, user.Role.Id)
+            }),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha384)
         };
