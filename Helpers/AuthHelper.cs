@@ -75,9 +75,10 @@ public class AuthHelper
             Subject = new ClaimsIdentity(new Claim[]
             {
                 new Claim(JwtClaimTypes.Id, user.Id),
+                new Claim(JwtClaimTypes.Name, user.Username),
                 new Claim(JwtClaimTypes.Role, user.Role.Id)
             }),
-            Expires = DateTime.UtcNow.AddHours(1),
+            Expires = DateTime.UtcNow.AddHours(6),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha384)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);

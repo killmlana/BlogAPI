@@ -33,13 +33,12 @@ public class AuthController : ControllerBase
                 throw new Exception("User already exists.");
             var user = await _authHelper.CreateUser(userDto);
             await _manager.CreateAsync(user);
-            return Accepted();
+            return Ok();
         }
         catch (Exception ex)
         {
             // Handle registration errors
-            throw;
-            return BadRequest($"Registration failed: {ex.Message}");
+            return BadRequest();
         }
     }
 
