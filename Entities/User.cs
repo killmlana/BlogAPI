@@ -12,6 +12,8 @@ public class User : IdentityUser
     public virtual IList<Post> PostHistory { get; set; }
     public virtual IList<Comment> CommentHistory { get; set; }
     public virtual long DateCreated { get; set; }
+    
+    public virtual IList<RefreshToken> RefreshTokens { get; set; }
 
     public User()
     {
@@ -48,5 +50,10 @@ public class User : IdentityUser
     {
         CommentHistory.Add(comment);
         comment.Owner = this;
+    }
+
+    public virtual void AddRefreshToken(RefreshToken refreshToken)
+    {
+        RefreshTokens.Add(refreshToken);
     }
 }

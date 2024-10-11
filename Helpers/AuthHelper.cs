@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using BlogAPI.Entities;
 using BlogAPI.Models;
@@ -50,6 +51,7 @@ public class AuthHelper
             role,
             DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             );
+        newUser.AddRefreshToken(GenerateRefreshToken(newUser));
         return newUser;
     }
 
@@ -64,7 +66,7 @@ public class AuthHelper
         if (!result.Succeeded) throw new AuthenticationException("Wrong username or password.");
     }
     
-    public string GenerateJwtToken(User user)
+    private string GenerateJwtToken(User user)
     {
         var claims = new[]
         {
@@ -86,4 +88,22 @@ public class AuthHelper
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
+    private RefreshToken GenerateRefreshToken(User user)
+    {
+        var randomNumber = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomNumber);
+            return new RefreshToken()
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                Expires = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
+                User = user
+            };
+        }
+        
+    }
+    
 }

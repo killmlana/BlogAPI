@@ -15,5 +15,6 @@ public class UserMap : ClassMap<User>
         Map(x => x.DateCreated);
         HasMany(x => x.PostHistory).Inverse().Cascade.All();
         HasMany(x => x.CommentHistory).Inverse().Cascade.All();
+        HasMany(x => x.RefreshTokens).Inverse();
     }
 }
