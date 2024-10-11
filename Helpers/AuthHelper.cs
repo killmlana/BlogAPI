@@ -1,10 +1,14 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Authentication;
 using System.Security.Claims;
+using System.Text;
 using BlogAPI.Entities;
 using BlogAPI.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using NHibernate;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace BlogAPI.Helpers;
 
@@ -15,15 +19,20 @@ public class AuthHelper
     private readonly RoleManager<Role> _roleManager;
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
+    private readonly IConfiguration _configuration;
 
-    public AuthHelper(NHibernateHelper nHibernateHelper, HashHelper hashHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager)
+    public AuthHelper(NHibernateHelper nHibernateHelper, HashHelper hashHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
     {
         _nHibernateHelper = nHibernateHelper;
         _hashHelper = hashHelper;
         _roleManager = roleManager;
         _userManager = userManager;
         _signInManager = signInManager;
+        _configuration = configuration;
     }
+    
+    
+    
     public async Task<User> CreateUser(UserDTO userDto)
     {
         string hashedPassword = _hashHelper.Hash(userDto.password);
@@ -53,5 +62,28 @@ public class AuthHelper
             false
             );
         if (!result.Succeeded) throw new AuthenticationException("Wrong username or password.");
+    }
+    
+    public string GenerateJwtToken(User user)
+    {
+        var claims = new[]
+        {
+            new Claim(JwtClaimTypes.Id, user.Id),
+            new Claim(JwtRegisteredClaimNames.Name, user.UserName),
+            new Claim(JwtClaimTypes.Role, _userManager.GetRolesAsync(user).Result.First()),
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddMinutes(30),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

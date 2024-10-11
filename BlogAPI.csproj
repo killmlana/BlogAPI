@@ -9,11 +9,11 @@
 
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-        <PackageReference Include="FluentNHibernate" Version="3.3.0" />
+        <PackageReference Include="FluentNHibernate" Version="3.4.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
         <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.2" />
-        <PackageReference Include="NHibernate" Version="5.5.0" />
+        <PackageReference Include="NHibernate" Version="5.5.2" />
         <PackageReference Include="SQLite" Version="3.13.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
         <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
