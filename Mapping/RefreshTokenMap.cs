@@ -8,7 +8,7 @@ public class RefreshTokenMap : ClassMap<RefreshToken>
     public RefreshTokenMap()
     {
         Id(x => x.Token);
-        References(x => x.User);
+        References(x => x.User).Not.LazyLoad();
         Map(x => x.Expires);
         Map(x => x.Created);
         Map(x => x.Revoked);

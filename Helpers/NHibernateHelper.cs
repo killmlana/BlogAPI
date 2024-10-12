@@ -79,7 +79,7 @@ public class NHibernateHelper : INhibernateHelper
                 {
                     throw new QueryException("No user found.");
                 }
-                userToUpdate.Username = username;
+                userToUpdate.Name = username;
                 await session.SaveOrUpdateAsync(userToUpdate);
                 await transaction.CommitAsync();
             }
@@ -137,7 +137,7 @@ public class NHibernateHelper : INhibernateHelper
         using (var session = _sessionFactory.OpenSession())
         {
             var userToFind = await session.Query<User>()
-                .Where(r => r.Username.ToLowerInvariant() == name.ToLowerInvariant())
+                .Where(r => r.Name.ToLowerInvariant() == name.ToLowerInvariant())
                 .ToListAsync();
             return userToFind.FirstOrDefault();
         }
@@ -420,5 +420,13 @@ public class NHibernateHelper : INhibernateHelper
     }
 
     #endregion
+
+    public async Task<RefreshToken> getRefreshToken(String refreshTokenString, User user)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            return await session.Query<RefreshToken>().FirstOrDefaultAsync(rt => rt.Token == refreshTokenString && rt.User.Id == user.Id);
+        }
+    }
 }
             

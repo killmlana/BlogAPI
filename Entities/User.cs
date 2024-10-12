@@ -5,7 +5,7 @@ namespace BlogAPI.Entities;
 public class User : IdentityUser
 {
     public new virtual string Id { get; set; }
-    public virtual string Username { get; set; }
+    public virtual string Name { get; set; }
     public virtual Role Role { get; set; }
     public virtual string? HashedPassword { get; set; }
     public virtual IList<CustomUserClaim> Claims { get; set; }
@@ -20,18 +20,20 @@ public class User : IdentityUser
         PostHistory = new List<Post>();
         CommentHistory = new List<Comment>();
         Claims = new List<CustomUserClaim>();
+        RefreshTokens = new List<RefreshToken>();
     }
 
-    public User(string id, string username, string hashedPassword, Role role, long dateCreated)
+    public User(string id, string name, string hashedPassword, Role role, long dateCreated)
     {
         Id = id;
-        Username = username;
+        Name = name;
         HashedPassword = hashedPassword;
         Role = role;
         DateCreated = dateCreated;
         PostHistory = new List<Post>();
         CommentHistory = new List<Comment>();
         Claims = new List<CustomUserClaim>();
+        RefreshTokens = new List<RefreshToken>();
     }
 
     public virtual void AddPost(Post post)

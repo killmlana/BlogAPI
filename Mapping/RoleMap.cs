@@ -10,7 +10,7 @@ public class RoleMap : ClassMap<Role>
     {
         Id(x => x.Id);
         Map(x => x.Name);
-        HasMany(x => x.Users).Inverse();
-        HasMany<CustomRoleClaim>(x => x.Claims).Inverse().Cascade.All();
+        HasMany(x => x.Users).Inverse().Not.LazyLoad();
+        HasMany<CustomRoleClaim>(x => x.Claims).Inverse().Cascade.All().Not.LazyLoad();
     }
 }

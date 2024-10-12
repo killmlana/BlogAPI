@@ -8,13 +8,13 @@ public class UserMap : ClassMap<User>
     public UserMap()
     {
         Id(x => x.Id);
-        Map(x => x.Username);
+        Map(x => x.Name);
         Map(x => x.HashedPassword);
-        References(x => x.Role);
-        HasMany(x => x.Claims).Inverse();
+        References(x => x.Role).Not.LazyLoad();
+        HasMany(x => x.Claims).Inverse().Not.LazyLoad();
         Map(x => x.DateCreated);
-        HasMany(x => x.PostHistory).Inverse().Cascade.All();
-        HasMany(x => x.CommentHistory).Inverse().Cascade.All();
-        HasMany(x => x.RefreshTokens).Inverse();
+        HasMany(x => x.PostHistory).Inverse().Cascade.All().Not.LazyLoad();
+        HasMany(x => x.CommentHistory).Inverse().Cascade.All().Not.LazyLoad();
+        HasMany(x => x.RefreshTokens).Inverse().Not.LazyLoad();
     }
 }

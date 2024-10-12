@@ -2,13 +2,13 @@ namespace BlogAPI.Entities;
 
 public class RefreshToken
 { 
-        public string Token { get; set; } 
-        public User User { get; set; }
-        public long Expires { get; set; }
-        public bool IsExpired => DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= Expires;
-        public long Created { get; set; }
-        public long? Revoked { get; set; }
-        public bool IsActive => Revoked == null && !IsExpired;
+        public virtual string Token { get; set; } 
+        public virtual User User { get; set; }
+        public virtual long Expires { get; set; }
+        public virtual bool IsExpired => DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= Expires;
+        public virtual long Created { get; set; }
+        public virtual long? Revoked { get; set; }
+        public virtual bool IsActive => Revoked == null && !IsExpired;
         
         public virtual void AddRefreshToken(User user)
         {

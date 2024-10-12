@@ -27,7 +27,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 
     public async Task<string?> GetUserNameAsync(User user, CancellationToken cancellationToken)
     {
-        return await Task.FromResult(user.Username);
+        return await Task.FromResult(user.Name);
     }
 
     public async Task SetUserNameAsync(User user, string? userName, CancellationToken cancellationToken)
@@ -38,13 +38,13 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 
     public async Task<string?> GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken)
     {
-        return await Task.FromResult(user.Username.ToLowerInvariant());
+        return await Task.FromResult(user.Name.ToLowerInvariant());
     }
 
     public async Task SetNormalizedUserNameAsync(User user, string? normalizedName, CancellationToken cancellationToken)
     {
         if (normalizedName == null) throw new ArgumentNullException(normalizedName);
-        user.Username = normalizedName;
+        user.Name = normalizedName;
         await UpdateAsync(user, cancellationToken);
     }
 

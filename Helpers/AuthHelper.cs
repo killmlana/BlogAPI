@@ -51,7 +51,7 @@ public class AuthHelper
             role,
             DateTimeOffset.UtcNow.ToUnixTimeSeconds()
             );
-        newUser.AddRefreshToken(GenerateRefreshToken(newUser));
+        newUser.AddRefreshToken(await GenerateRefreshToken(newUser));
         return newUser;
     }
 
@@ -66,13 +66,23 @@ public class AuthHelper
         if (!result.Succeeded) throw new AuthenticationException("Wrong username or password.");
     }
     
-    private string GenerateJwtToken(User user)
+    public async Task<string> GenerateJwtToken(User user)
     {
+        
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user), "User cannot be null.");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.Id))
+        {
+            throw new ArgumentException("User ID cannot be null or empty.", nameof(user.Id));
+        }
+        
         var claims = new[]
         {
             new Claim(JwtClaimTypes.Id, user.Id),
-            new Claim(JwtRegisteredClaimNames.Name, user.UserName),
-            new Claim(JwtClaimTypes.Role, _userManager.GetRolesAsync(user).Result.First()),
+            new Claim(JwtClaimTypes.Name, user.Name),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -82,14 +92,14 @@ public class AuthHelper
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(30),
+            expires: DateTime.UtcNow.AddMinutes(30),
             signingCredentials: creds
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    private RefreshToken GenerateRefreshToken(User user)
+    public async Task<RefreshToken> GenerateRefreshToken(User user)
     {
         var randomNumber = new byte[32];
         using (var rng = RandomNumberGenerator.Create())
