@@ -61,14 +61,15 @@ public class AuthController : ControllerBase
         await _authHelper.Login(userDto);
         var user = await _manager.FindByNameAsync(userDto.username.ToLowerInvariant());
         var rt = await _authHelper.GenerateRefreshToken(user);
-        user.AddRefreshToken(rt);
+        var jwt = await _authHelper.GenerateJwtToken(user);
+        await _nHibernateHelper.AddRtAsync(rt);
 
         await _nHibernateHelper.UpdateUser(user);
 
         return Ok(new
         {
             RefreshToken = rt.Token,
-            AccessToken = await _authHelper.GenerateJwtToken(user)
+            AccessToken = jwt
         });
     }
     

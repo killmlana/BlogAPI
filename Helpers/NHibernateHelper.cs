@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
+using BlogAPI.Factories;
 using BlogAPI.Models;
 using FluentNHibernate.Cfg;
 using FluentNHibernate.Cfg.Db;
@@ -16,54 +17,10 @@ namespace BlogAPI.Helpers;
 public class NHibernateHelper : INhibernateHelper
 {
 
-    private readonly ISessionFactory _sessionFactory;
-
-    #region SessionManagement
-
-    public NHibernateHelper()
-    {
-        _sessionFactory = Fluently.Configure()
-            .Database(
-                SQLiteConfiguration.Standard
-                    .UsingFile("firstProject.db")
-            )
-            .Mappings(m =>
-                m.FluentMappings.AddFromAssemblyOf<Program>())
-            .ExposeConfiguration(BuildSchema)
-            .BuildSessionFactory();
-    } 
+    private readonly SessionFactory _sessionFactory;
     
-    private void BuildSchema(Configuration config)
-    {
-        // this NHibernate tool takes a configuration (with mapping info in)
-        // and exports a database schema from it
-        new SchemaExport(config)
-            .Create(false, false);
-    }
-
-    public ISession OpenSession()
-    {
-        return _sessionFactory.OpenSession();
-    }
-
-    public string GenerateGuid()
-    {
-        string id = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-        id = Regex.Replace(id, "[^0-9a-zA-Z]+", "");
-        return id;
-    }
+    public NHibernateHelper(SessionFactory sessionFactory) => _sessionFactory = sessionFactory;
     
-    public ISession GetSession()
-    {
-        return _sessionFactory.GetCurrentSession();
-    }
-
-    public async Task Dispose()
-    {
-        _sessionFactory.Dispose();
-    }
-
-    #endregion
 
     #region UserStore
 
@@ -93,7 +50,7 @@ public class NHibernateHelper : INhibernateHelper
 
     public async Task<User?> FindByuserId(string id) // returns null if no user found.
     {
-        using (var s = OpenSession())
+        using (var s = _sessionFactory.OpenSession())
         {
             User? queryUser = await s.GetAsync<User?>(id);
             return queryUser;
@@ -102,7 +59,7 @@ public class NHibernateHelper : INhibernateHelper
 
     public async Task DeleteUser(User user)
     {
-        using (var session = OpenSession())
+        using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())
         {
             try
@@ -111,7 +68,6 @@ public class NHibernateHelper : INhibernateHelper
                 if (userToDelete == null) throw new QueryException("User not found.");
                 await session.DeleteAsync(userToDelete);
                 await transaction.CommitAsync();
-                await session.FlushAsync();
             }
             catch (Exception e)
             {
@@ -127,7 +83,6 @@ public class NHibernateHelper : INhibernateHelper
         using (var transaction = session.BeginTransaction())
         {
             await session.UpdateAsync(user);
-            await session.FlushAsync();
             await transaction.CommitAsync();
         }    
     }
@@ -138,8 +93,8 @@ public class NHibernateHelper : INhibernateHelper
         {
             var userToFind = await session.Query<User>()
                 .Where(r => r.Name.ToLowerInvariant() == name.ToLowerInvariant())
-                .ToListAsync();
-            return userToFind.FirstOrDefault();
+                .FirstOrDefaultAsync();
+            return userToFind;
         }
     }
 
@@ -156,6 +111,14 @@ public class NHibernateHelper : INhibernateHelper
     #endregion
 
     #region RoleStore
+
+    public async Task<Role> GetRoleFromUserAsync(User user)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            return await session.GetAsync<Role>(user.Role.Id);
+        }
+    }
 
     public async Task CreateRole(Role role)
     {
@@ -186,7 +149,7 @@ public class NHibernateHelper : INhibernateHelper
 
     public async Task DeleteRole(Role role)
     {
-        using (var session = OpenSession())
+        using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())
         {
             try
@@ -231,7 +194,7 @@ public class NHibernateHelper : INhibernateHelper
 
     public async Task<Role?> FindByRoleId(string roleId) //returns null if no role found.
     {
-        using (var s = OpenSession())
+        using (var s = _sessionFactory.OpenSession())
         {
             var queryRole = await s.GetAsync<Role?>(roleId);
             return queryRole;
@@ -339,7 +302,7 @@ public class NHibernateHelper : INhibernateHelper
                     ClaimType = claim.Type,
                     ClaimValue = claim.Value,
                     UserId = userFromDb.Id,
-                    Id = GenerateGuid()
+                    Id = _sessionFactory.GenerateGuid()
                 });
                 await session.SaveOrUpdateAsync(customUserClaim);
                 await transaction.CommitAsync();
@@ -378,7 +341,7 @@ public class NHibernateHelper : INhibernateHelper
                     Role = role,
                     ClaimType = claim.Type,
                     ClaimValue = claim.Value,
-                    Id = GenerateGuid(),
+                    Id = _sessionFactory.GenerateGuid(),
                     RoleId = role.Id
                 };
                 await session.SaveOrUpdateAsync(customRoleClaim);
@@ -443,6 +406,18 @@ public class NHibernateHelper : INhibernateHelper
             using (var transaction = session.BeginTransaction())
         {
             await session.UpdateAsync(refreshToken);
+            await transaction.CommitAsync();
+        }
+    }
+
+    public async Task AddRtAsync(RefreshToken refreshToken)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        using (var transaction = session.BeginTransaction())
+        {
+            var user = await session.GetAsync<User>(refreshToken.User.Id);
+            user.AddRefreshToken(refreshToken);
+            await session.SaveOrUpdateAsync(refreshToken);
             await transaction.CommitAsync();
         }
     }

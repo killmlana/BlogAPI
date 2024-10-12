@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using BlogAPI.Entities;
+using BlogAPI.Factories;
 using BlogAPI.Models;
 using IdentityModel;
 using Microsoft.AspNetCore.Identity;
@@ -20,8 +21,9 @@ public class AuthHelper
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IConfiguration _configuration;
+    private readonly SessionFactory _sessionFactory;
 
-    public AuthHelper(NHibernateHelper nHibernateHelper, HashHelper hashHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
+    public AuthHelper(NHibernateHelper nHibernateHelper, HashHelper hashHelper, RoleManager<Role> roleManager, UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, SessionFactory sessionFactory)
     {
         _nHibernateHelper = nHibernateHelper;
         _hashHelper = hashHelper;
@@ -29,6 +31,7 @@ public class AuthHelper
         _userManager = userManager;
         _signInManager = signInManager;
         _configuration = configuration;
+        _sessionFactory = sessionFactory;
     }
     
     
@@ -38,13 +41,13 @@ public class AuthHelper
         string hashedPassword = _hashHelper.Hash(userDto.password);
         if (await _roleManager.FindByNameAsync("User") == null)
         {
-            await _roleManager.CreateAsync(new Role(_nHibernateHelper.GenerateGuid(), "User"));
+            await _roleManager.CreateAsync(new Role(_sessionFactory.GenerateGuid(), "User"));
         }
         var role = await _roleManager.FindByNameAsync("User");
         if (role == null) throw new QueryException("Role not found.");
         await _roleManager.AddClaimAsync(role, new Claim(JwtClaimTypes.Role, role.Name));
         var newUser = new User(
-            _nHibernateHelper.GenerateGuid(),
+            _sessionFactory.GenerateGuid(),
             userDto.username,
             hashedPassword,
             role,
@@ -78,11 +81,13 @@ public class AuthHelper
             throw new ArgumentException("User ID cannot be null or empty.", nameof(user.Id));
         }
         
+        var role = await _nHibernateHelper.GetRoleFromUserAsync(user);
+        
         var claims = new[]
         {
             new Claim(JwtClaimTypes.Id, user.Id),
             new Claim(JwtClaimTypes.Name, user.Name),
-            new Claim(JwtClaimTypes.Role, user.Role.Name),
+            new Claim(JwtClaimTypes.Role, role.Name),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

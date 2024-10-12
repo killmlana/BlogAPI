@@ -1,6 +1,7 @@
 using System.Text;
 using BlogAPI.Contracts;
 using BlogAPI.Entities;
+using BlogAPI.Factories;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,6 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<SessionFactory>();
 builder.Services.AddScoped<NHibernateHelper>();
 builder.Services.AddScoped<HashHelper>();
 builder.Services.AddScoped<AuthHelper>();

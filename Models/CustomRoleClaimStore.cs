@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using BlogAPI.Entities;
+using BlogAPI.Factories;
 using BlogAPI.Helpers;
 using Microsoft.AspNetCore.Identity;
 
@@ -7,14 +8,16 @@ namespace BlogAPI.Models;
 
 public class CustomRoleClaimStore : IRoleClaimStore<Role> {
     private readonly NHibernateHelper _nHibernateHelper;
+    private readonly SessionFactory _sessionFactory;
 
-    public CustomRoleClaimStore(NHibernateHelper nHibernateHelper)
+    public CustomRoleClaimStore(NHibernateHelper nHibernateHelper, SessionFactory sessionFactory)
     {
         _nHibernateHelper = nHibernateHelper;
+        _sessionFactory =  sessionFactory;
     }
     public async void Dispose()
     {
-        await _nHibernateHelper.Dispose();
+        await _sessionFactory.Dispose();
     }
 
     public async Task<IdentityResult> CreateAsync(Role role, CancellationToken cancellationToken)

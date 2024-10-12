@@ -1,4 +1,5 @@
 using BlogAPI.Entities;
+using BlogAPI.Factories;
 using BlogAPI.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Claim = System.Security.Claims.Claim;
@@ -8,16 +9,18 @@ namespace BlogAPI.Models;
 public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
 {
     private readonly NHibernateHelper _nHibernateHelper;
+    private readonly SessionFactory _sessionFactory;
 
-    public CustomUserStore(NHibernateHelper userService)
+    public CustomUserStore(NHibernateHelper userService, SessionFactory sessionFactory)
     {
         _nHibernateHelper = userService;
+        _sessionFactory = sessionFactory;
     }
 
     #region UserStore
     public async void Dispose()
     {
-        await _nHibernateHelper.Dispose();
+        await _sessionFactory.Dispose();
     }
 
     public async Task<string> GetUserIdAsync(User user, CancellationToken cancellationToken)
