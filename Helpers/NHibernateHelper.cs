@@ -421,11 +421,11 @@ public class NHibernateHelper : INhibernateHelper
 
     #endregion
 
-    public async Task<RefreshToken> getRefreshToken(String refreshTokenString, User user)
+    public async Task<RefreshToken> getRefreshToken(String refreshTokenString)
     {
         using (var session = _sessionFactory.OpenSession())
         {
-            return await session.Query<RefreshToken>().FirstOrDefaultAsync(rt => rt.Token == refreshTokenString && rt.User.Id == user.Id);
+            return await session.GetAsync<RefreshToken>(refreshTokenString);
         }
     }
 }

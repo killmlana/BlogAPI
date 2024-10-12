@@ -14,4 +14,5 @@ public class RefreshToken
         {
                 user.AddRefreshToken(this);
         }
+        
 }

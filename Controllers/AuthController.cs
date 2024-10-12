@@ -36,10 +36,13 @@ public class AuthController : ControllerBase
                 throw new Exception("User already exists.");
             var user = await _authHelper.CreateUser(userDto);
             await _manager.CreateAsync(user);
+            var rt = await _authHelper.GenerateRefreshToken(user);
+            user.AddRefreshToken(rt);
+            await _nHibernateHelper.UpdateUser(user);
 
             return Ok(new
             {
-                RefreshToken = _authHelper.GenerateRefreshToken(user).Result.Token,
+                RefreshToken = rt.Token,
                 AccessToken = await _authHelper.GenerateJwtToken(user)
             });
         }
@@ -56,9 +59,14 @@ public class AuthController : ControllerBase
     {
         await _authHelper.Login(userDto);
         var user = await _manager.FindByNameAsync(userDto.username.ToLowerInvariant());
+        var rt = await _authHelper.GenerateRefreshToken(user);
+        user.AddRefreshToken(rt);
+
+        await _nHibernateHelper.UpdateUser(user);
+
         return Ok(new
         {
-            RefreshToken = _authHelper.GenerateRefreshToken(user).Result.Token,
+            RefreshToken = rt.Token,
             AccessToken = await _authHelper.GenerateJwtToken(user)
         });
     }
@@ -69,6 +77,7 @@ public class AuthController : ControllerBase
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(refreshDto.AccessToken);
+        var token = refreshDto.RefreshTokenID;
 
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == JwtClaimTypes.Id)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -78,11 +87,9 @@ public class AuthController : ControllerBase
 
         // 2. Fetch User from the Database
         var user = await _nHibernateHelper.FindByuserId(userId);  // Assuming this method gets the user by ID
-
-        // 3. Check if RefreshTokenID exists for the user
-        var rt = await _nHibernateHelper.getRefreshToken(refreshDto.RefreshTokenID, user);
-
-        // 4. Verify Refresh Token expiration or status if needed
+        
+        var rt = await _nHibernateHelper.getRefreshToken(token);
+        
         if (!rt.IsActive)
         {
             return Unauthorized("Refresh token has expired.");

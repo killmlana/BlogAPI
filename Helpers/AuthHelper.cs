@@ -92,7 +92,7 @@ public class AuthHelper
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(30),
+            expires: DateTime.UtcNow.AddDays(1),
             signingCredentials: creds
         );
 
@@ -105,13 +105,14 @@ public class AuthHelper
         using (var rng = RandomNumberGenerator.Create())
         {
             rng.GetBytes(randomNumber);
-            return new RefreshToken()
+            var rt = new RefreshToken()
             {
                 Token = Convert.ToBase64String(randomNumber),
                 Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 Expires = DateTimeOffset.UtcNow.AddDays(1).ToUnixTimeSeconds(),
                 User = user
             };
+            return rt;
         }
         
     }
