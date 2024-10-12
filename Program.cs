@@ -31,7 +31,6 @@ builder.Services.AddScoped<CustomUserClaim>();
 builder.Services.AddScoped<CustomRoleClaim>();
 builder.Services.AddScoped<RoleManager<Role>>();
 builder.Services.AddScoped<UserManager<User>>();
-builder.Services.AddScoped<INhibernateHelper, NHibernateHelper>();
 builder.Services.AddScoped<IUserPasswordStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IRoleStore<Role>, CustomRoleClaimStore>();
 builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();

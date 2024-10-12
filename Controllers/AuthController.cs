@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using BlogAPI.Entities;
+using BlogAPI.Factories;
 using BlogAPI.Helpers;
 using BlogAPI.Models;
 using IdentityModel;
@@ -17,14 +18,14 @@ public class AuthController : ControllerBase
     private readonly NHibernateHelper _nHibernateHelper;
     private readonly AuthHelper _authHelper;
     private readonly UserManager<User> _manager;
-    private readonly SignInManager<User> _signInManager;
+    private readonly SessionFactory _sessionFactory;
 
-    public AuthController(AuthHelper authHelper, NHibernateHelper nHibernateHelper, UserManager<User> manager, SignInManager<User> signInManager)
+    public AuthController(AuthHelper authHelper, NHibernateHelper nHibernateHelper, UserManager<User> manager, SessionFactory sessionFactory)
     {
         _nHibernateHelper = nHibernateHelper;
         _authHelper = authHelper;
         _manager = manager;
-        _signInManager = signInManager;
+        _sessionFactory = sessionFactory;
     }
     
     [HttpPost("register")]
@@ -32,14 +33,16 @@ public class AuthController : ControllerBase
     {
         try
         {
+            var session = _sessionFactory.OpenSession();
             // Register the user
-            if (await _manager.FindByNameAsync(userDto.username.ToLowerInvariant()) != null)
+            if (await _nHibernateHelper.FindByUserName(userDto.username.ToLowerInvariant(), session) != null)
                 throw new Exception("User already exists.");
             var user = await _authHelper.CreateUser(userDto);
-            await _manager.CreateAsync(user);
+            await _nHibernateHelper.CreateUser(user, session);
             var rt = await _authHelper.GenerateRefreshToken(user);
             user.AddRefreshToken(rt);
-            await _nHibernateHelper.UpdateUser(user);
+            await _nHibernateHelper.UpdateUser(user, session);
+            session.Dispose();
 
             return Ok(new
             {
@@ -58,13 +61,14 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] UserDTO userDto)
     {
+        var session = _sessionFactory.OpenSession();
         await _authHelper.Login(userDto);
-        var user = await _manager.FindByNameAsync(userDto.username.ToLowerInvariant());
+        var user = await _nHibernateHelper.FindByUserName(userDto.username.ToLowerInvariant(), session);
         var rt = await _authHelper.GenerateRefreshToken(user);
         var jwt = await _authHelper.GenerateJwtToken(user);
-        await _nHibernateHelper.AddRtAsync(rt);
-
-        await _nHibernateHelper.UpdateUser(user);
+        await _nHibernateHelper.AddRtAsync(rt, session);
+        await _nHibernateHelper.UpdateUser(user, session);
+        session.Dispose();
 
         return Ok(new
         {
@@ -77,6 +81,7 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshDTO refreshDto)
     {
+        var session = _sessionFactory.OpenSession();
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(refreshDto.AccessToken);
         var token = refreshDto.RefreshTokenID;
@@ -88,9 +93,9 @@ public class AuthController : ControllerBase
         }
 
         
-        var user = await _nHibernateHelper.FindByuserId(userId);  
+        var user = await _nHibernateHelper.FindByuserId(userId, session);  
         
-        var rt = await _nHibernateHelper.getRefreshToken(token);
+        var rt = await _nHibernateHelper.GetRefreshToken(token, session);
         
         if (!rt.IsActive)
         {
@@ -99,7 +104,7 @@ public class AuthController : ControllerBase
 
         
         var newAccessToken = await _authHelper.GenerateJwtToken(user);
-
+        session.Dispose();
         
         return Ok(new
         {
@@ -111,9 +116,11 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(RefreshDTO refreshDto)
     {
-        var rt = await _nHibernateHelper.getRefreshToken(refreshDto.AccessToken);
+        var session = _sessionFactory.OpenSession();
+        var rt = await _nHibernateHelper.GetRefreshToken(refreshDto.AccessToken, session);
         rt.Expires = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        await _nHibernateHelper.UpdateRtAsync(rt);
+        await _nHibernateHelper.UpdateRtAsync(rt, session);
+        session.Dispose();
         return Ok("Logged out.");
     }
     

@@ -14,7 +14,7 @@ using ISession = NHibernate.ISession;
 
 namespace BlogAPI.Helpers;
 
-public class NHibernateHelper : INhibernateHelper
+public class NHibernateHelper 
 {
 
     private readonly SessionFactory _sessionFactory;
@@ -24,9 +24,12 @@ public class NHibernateHelper : INhibernateHelper
 
     #region UserStore
 
-    public async Task SetUsername(User user, string username)
+    public async Task SetUsername(User user, string username, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             try
@@ -48,18 +51,24 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task<User?> FindByuserId(string id) // returns null if no user found.
+    public async Task<User?> FindByuserId(string id, ISession? session = null)
     {
-        using (var s = _sessionFactory.OpenSession())
+        if (session == null)
         {
-            User? queryUser = await s.GetAsync<User?>(id);
+            session = _sessionFactory.OpenSession();
+        }
+        {
+            User? queryUser = await session.GetAsync<User?>(id);
             return queryUser;
         }
     }
 
-    public async Task DeleteUser(User user)
+    public async Task DeleteUser(User user, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             try
@@ -77,9 +86,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task UpdateUser(User user)
+    public async Task UpdateUser(User user, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             await session.UpdateAsync(user);
@@ -87,9 +99,12 @@ public class NHibernateHelper : INhibernateHelper
         }    
     }
 
-    public async Task<User?> FindByUserName(string name) // returns null when no user is found
+    public async Task<User?> FindByUserName(string name, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var userToFind = await session.Query<User>()
                 .Where(r => r.Name.ToLowerInvariant() == name.ToLowerInvariant())
@@ -98,9 +113,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task CreateUser(User user)
+    public async Task CreateUser(User user, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             await session.SaveOrUpdateAsync(user);
@@ -112,19 +130,25 @@ public class NHibernateHelper : INhibernateHelper
 
     #region RoleStore
 
-    public async Task<Role> GetRoleFromUserAsync(User user)
+    public async Task<Role> GetRoleFromUserAsync(User user, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             return await session.GetAsync<Role>(user.Role.Id);
         }
     }
 
-    public async Task CreateRole(Role role)
+    public async Task CreateRole(Role role, ISession? session = null)
     {
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         try
         {
-            using (var session = _sessionFactory.OpenSession())
             using (var transaction = session.BeginTransaction())
             {
                 await session.SaveOrUpdateAsync(role);
@@ -136,20 +160,25 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task UpdateRole(Role role)
+    public async Task UpdateRole(Role role, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             await session.UpdateAsync(role);
-            await session.FlushAsync();
             await transaction.CommitAsync();
         }
     }
 
-    public async Task DeleteRole(Role role)
+    public async Task DeleteRole(Role role, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             try
@@ -158,7 +187,6 @@ public class NHibernateHelper : INhibernateHelper
                 if (roleToDelete == null) throw new QueryException("Role not found.");
                 await session.DeleteAsync(roleToDelete);
                 await transaction.CommitAsync();
-                await session.FlushAsync();
             }
             catch (Exception e)
             {
@@ -168,9 +196,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task SetRolename(Role role, string roleName)
+    public async Task SetRolename(Role role, string roleName, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             try
@@ -192,18 +223,24 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task<Role?> FindByRoleId(string roleId) //returns null if no role found.
+    public async Task<Role?> FindByRoleId(string roleId, ISession? session = null)
     {
-        using (var s = _sessionFactory.OpenSession())
+        if (session == null)
         {
-            var queryRole = await s.GetAsync<Role?>(roleId);
+            session = _sessionFactory.OpenSession();
+        }
+        {
+            var queryRole = await session.GetAsync<Role?>(roleId);
             return queryRole;
         }
     }
 
-    public async Task<Role?> FindByRoleName(string roleName) //returns null if no role found.
+    public async Task<Role?> FindByRoleName(string roleName, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var roleToFind = await session.Query<Role>()
                 .Where(r => r.Name.ToLowerInvariant() == roleName.ToLowerInvariant())
@@ -216,9 +253,12 @@ public class NHibernateHelper : INhibernateHelper
 
     #region UserClaimStore
 
-    public async Task<IList<User>> GetUsersForClaim(Claim claim)
+    public async Task<IList<User>> GetUsersForClaim(Claim claim, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var listOfUsers = await session.Query<User>().Where(user =>
                 user.Claims.Any(customClaim => 
@@ -230,9 +270,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task<bool> UserHasClaim(User user, Claim claim)
+    public async Task<bool> UserHasClaim(User user, Claim claim, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var userToCheck = await session.GetAsync<User>(user.Id);
             foreach (var customClaim in userToCheck.Claims)
@@ -244,9 +287,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task RemoveClaimFromUser(User user, Claim claim)
+    public async Task RemoveClaimFromUser(User user, Claim claim, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())    
         {
             foreach (var customClaim in user.Claims)
@@ -261,9 +307,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task<IList<Claim>> GetClaimsFromUser(User user)
+    public async Task<IList<Claim>> GetClaimsFromUser(User user, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var userToGet = await session.GetAsync<User>(user.Id);
             var listOfClaims = new List<Claim>();
@@ -276,10 +325,13 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task ReplaceClaimFromUser(User user, Claim claim, Claim newClaim)
+    public async Task ReplaceClaimFromUser(User user, Claim claim, Claim newClaim, ISession? session = null)
     {
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         if (!await UserHasClaim(user, claim)) throw new NullReferenceException(claim.Value);
-        using (var session = _sessionFactory.OpenSession())
         {
             var userToUpdate = await session.GetAsync<User>(user.Id);
             await RemoveClaimFromUser(userToUpdate, claim);
@@ -287,9 +339,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task AddClaimsToUser(User user, IEnumerable<Claim> claims)
+    public async Task AddClaimsToUser(User user, IEnumerable<Claim> claims, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())    
         {
             var userFromDb = await session.GetAsync<User>(user.Id);
@@ -314,9 +369,12 @@ public class NHibernateHelper : INhibernateHelper
 
     #region RoleClaimStore
 
-    public async Task<IList<Claim>> GetClaimsFromRole(Role role)
+    public async Task<IList<Claim>> GetClaimsFromRole(Role role, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var roleToGet = await session.GetAsync<Role>(role.Id);
             var listOfClaims = new List<Claim>();
@@ -329,9 +387,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task AddClaimToRole(Role role, Claim claim)
+    public async Task AddClaimToRole(Role role, Claim claim, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             if (!await RoleHasClaim(role, claim))
@@ -350,9 +411,12 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task<bool> RoleHasClaim(Role role, Claim claim)
+    public async Task<bool> RoleHasClaim(Role role, Claim claim, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         {
             var roleToCheck = await session.GetAsync<Role>(role.Id);
             foreach (var customClaim in roleToCheck.Claims)
@@ -366,10 +430,13 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
 
-    public async Task RemoveClaimFromRole(Role role, Claim claim)
+    public async Task RemoveClaimFromRole(Role role, Claim claim, ISession? session = null)
     {
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         if (!await RoleHasClaim(role, claim)) throw new NullReferenceException(claim.Value);
-        using (var session = _sessionFactory.OpenSession())
         using (var transaction = session.BeginTransaction())    
         {
             foreach (var customClaim in role.Claims)
@@ -384,11 +451,15 @@ public class NHibernateHelper : INhibernateHelper
 
     #endregion
 
-    public async Task<RefreshToken> getRefreshToken(String refreshTokenString)
+    public async Task<RefreshToken> GetRefreshToken(String refreshTokenString, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
         {
-            return await session.GetAsync<RefreshToken>(refreshTokenString);
+            session = _sessionFactory.OpenSession();
+        }
+        {
+            var rt = await session.GetAsync<RefreshToken>(refreshTokenString);
+            return rt;
         }
     }
     
@@ -400,19 +471,24 @@ public class NHibernateHelper : INhibernateHelper
         }
     }
     
-    public async Task UpdateRtAsync(RefreshToken refreshToken)
+    public async Task UpdateRtAsync(RefreshToken refreshToken, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
-            using (var transaction = session.BeginTransaction())
+        if (session == null)
         {
-            await session.UpdateAsync(refreshToken);
-            await transaction.CommitAsync();
+            session = _sessionFactory.OpenSession();
         }
+
+        using var transaction = session.BeginTransaction();
+        await session.UpdateAsync(refreshToken);
+        await transaction.CommitAsync();
     }
 
-    public async Task AddRtAsync(RefreshToken refreshToken)
+    public async Task AddRtAsync(RefreshToken refreshToken, ISession? session = null)
     {
-        using (var session = _sessionFactory.OpenSession())
+        if (session == null)
+        {
+            session = _sessionFactory.OpenSession();
+        }
         using (var transaction = session.BeginTransaction())
         {
             var user = await session.GetAsync<User>(refreshToken.User.Id);
