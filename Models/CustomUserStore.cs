@@ -20,7 +20,7 @@ public class CustomUserStore : IUserPasswordStore<User>, IUserClaimStore<User>
     #region UserStore
     public async void Dispose()
     {
-        await _sessionFactory.Dispose();
+        
     }
 
     public async Task<string> GetUserIdAsync(User user, CancellationToken cancellationToken)

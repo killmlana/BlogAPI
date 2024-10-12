@@ -17,7 +17,7 @@ public class CustomRoleClaimStore : IRoleClaimStore<Role> {
     }
     public async void Dispose()
     {
-        await _sessionFactory.Dispose();
+        
     }
 
     public async Task<IdentityResult> CreateAsync(Role role, CancellationToken cancellationToken)
