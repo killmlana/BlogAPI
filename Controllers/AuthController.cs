@@ -85,8 +85,8 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid access token.");
         }
 
-        // 2. Fetch User from the Database
-        var user = await _nHibernateHelper.FindByuserId(userId);  // Assuming this method gets the user by ID
+        
+        var user = await _nHibernateHelper.FindByuserId(userId);  
         
         var rt = await _nHibernateHelper.getRefreshToken(token);
         
@@ -95,10 +95,10 @@ public class AuthController : ControllerBase
             return Unauthorized("Refresh token has expired.");
         }
 
-        // 5. Generate a new JWT token
+        
         var newAccessToken = await _authHelper.GenerateJwtToken(user);
 
-        // Return the new tokens
+        
         return Ok(new
         {
             AccessToken = newAccessToken,
