@@ -9,7 +9,6 @@ using IdentityModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using NHibernate;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace BlogAPI.Helpers;
 
@@ -83,6 +82,7 @@ public class AuthHelper
         {
             new Claim(JwtClaimTypes.Id, user.Id),
             new Claim(JwtClaimTypes.Name, user.Name),
+            new Claim(JwtClaimTypes.Role, user.Role.Name),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

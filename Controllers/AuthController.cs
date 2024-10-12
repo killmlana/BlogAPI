@@ -6,6 +6,7 @@ using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using NHibernate.Type;
 
 namespace BlogAPI.Controllers;
 
@@ -104,4 +105,15 @@ public class AuthController : ControllerBase
             AccessToken = newAccessToken,
         });
     }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(RefreshDTO refreshDto)
+    {
+        var rt = await _nHibernateHelper.getRefreshToken(refreshDto.AccessToken);
+        rt.Expires = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        await _nHibernateHelper.UpdateRtAsync(rt);
+        return Ok("Logged out.");
+    }
+    
 }

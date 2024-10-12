@@ -5,11 +5,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BlogAPI.Models;
 
-public class CustomRoleStore : IRoleClaimStore<Role>
-{
+public class CustomRoleClaimStore : IRoleClaimStore<Role> {
     private readonly NHibernateHelper _nHibernateHelper;
 
-    public CustomRoleStore(NHibernateHelper nHibernateHelper)
+    public CustomRoleClaimStore(NHibernateHelper nHibernateHelper)
     {
         _nHibernateHelper = nHibernateHelper;
     }

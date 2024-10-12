@@ -428,5 +428,23 @@ public class NHibernateHelper : INhibernateHelper
             return await session.GetAsync<RefreshToken>(refreshTokenString);
         }
     }
+    
+    public async Task<RefreshToken> GetLatestRtUser(User user)
+    {
+        using (var session = _sessionFactory.OpenSession())
+        {
+            return await session.Query<RefreshToken>().OrderByDescending(x => x.Expires).FirstOrDefaultAsync();
+        }
+    }
+    
+    public async Task UpdateRtAsync(RefreshToken refreshToken)
+    {
+        using (var session = _sessionFactory.OpenSession())
+            using (var transaction = session.BeginTransaction())
+        {
+            await session.UpdateAsync(refreshToken);
+            await transaction.CommitAsync();
+        }
+    }
 }
             
