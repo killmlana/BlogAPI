@@ -37,6 +37,12 @@ builder.Services.AddScoped<IPasswordHasher<User>, CustomPasswordHasher>();
 builder.Services.AddScoped<IUserClaimStore<User>, CustomUserStore>();
 builder.Services.AddScoped<IHashHelper, HashHelper>();
 builder.Services.AddIdentity<User, Role>().AddUserStore<CustomUserStore>().AddRoleStore<CustomRoleClaimStore>();
+builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        }));
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -110,6 +116,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     
 }
+
+app.UseCors("MyPolicy");
 
 app.UseHttpsRedirection();
 

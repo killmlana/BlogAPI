@@ -7,8 +7,6 @@ using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualBasic;
-using NHibernate.Type;
 
 namespace BlogAPI.Controllers;
 
@@ -32,31 +30,22 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserDTO userDto)
     {
-        try
-        {
-            var session = _sessionFactory.OpenSession();
-            // Register the user
-            if (await _nHibernateHelper.FindByUserName(userDto.username.ToLowerInvariant(), session) != null)
-                throw new Exception("User already exists.");
-            var user = await _authHelper.CreateUser(userDto);
-            await _nHibernateHelper.CreateUser(user, session);
-            var rt = await _authHelper.GenerateRefreshToken(user);
-            user.AddRefreshToken(rt);
-            await _nHibernateHelper.UpdateUser(user, session);
-            session.Dispose();
+        var session = _sessionFactory.OpenSession();
+        // Register the user
+        if (await _nHibernateHelper.FindByUserName(userDto.username.ToLowerInvariant(), session) != null)
+            throw new Exception("User already exists.");
+        var user = await _authHelper.CreateUser(userDto);
+        await _nHibernateHelper.CreateUser(user, session);
+        var rt = await _authHelper.GenerateRefreshToken(user);
+        user.AddRefreshToken(rt);
+        await _nHibernateHelper.UpdateUser(user, session);
+        session.Dispose();
 
-            return Ok(new
-            {
-                RefreshToken = rt.Token,
-                AccessToken = await _authHelper.GenerateJwtToken(user)
-            });
-        }
-        catch (Exception ex)
+        return Ok(new
         {
-            // Handle registration errors
-            throw;
-            return BadRequest($"Registration failed: {ex.Message}");
-        }
+            RefreshToken = rt.Token,
+            AccessToken = await _authHelper.GenerateJwtToken(user)
+        });
     }
 
     [HttpPost("login")]
@@ -78,7 +67,7 @@ public class AuthController : ControllerBase
         });
     }
     
-    [Authorize]
+    
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshDTO refreshDto)
     {
@@ -122,7 +111,7 @@ public class AuthController : ControllerBase
         rt.Expires = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         await _nHibernateHelper.UpdateRtAsync(rt, session);
         session.Dispose();
-        return Ok("Logged out.");
+        return Ok();
     }
     
 }

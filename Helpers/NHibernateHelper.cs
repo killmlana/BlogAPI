@@ -1,15 +1,9 @@
 using System.Security.Claims;
-using System.Text.RegularExpressions;
-using BlogAPI.Contracts;
 using BlogAPI.Entities;
 using BlogAPI.Factories;
 using BlogAPI.Models;
-using FluentNHibernate.Cfg;
-using FluentNHibernate.Cfg.Db;
 using NHibernate;
-using NHibernate.Cfg;
 using NHibernate.Linq;
-using NHibernate.Tool.hbm2ddl;
 using ISession = NHibernate.ISession;
 
 namespace BlogAPI.Helpers;
@@ -37,7 +31,7 @@ public class NHibernateHelper
                 var userToUpdate = await session.GetAsync<User>(user.Id);
                 if (userToUpdate == null)
                 {
-                    throw new QueryException("No user found.");
+                    throw new BadHttpRequestException("No user found.");
                 }
                 userToUpdate.Name = username;
                 await session.SaveOrUpdateAsync(userToUpdate);
@@ -74,7 +68,7 @@ public class NHibernateHelper
             try
             {
                 var userToDelete = await session.GetAsync<User>(user.Id);
-                if (userToDelete == null) throw new QueryException("User not found.");
+                if (userToDelete == null) throw new BadHttpRequestException("User not found.");
                 await session.DeleteAsync(userToDelete);
                 await transaction.CommitAsync();
             }
@@ -147,16 +141,10 @@ public class NHibernateHelper
         {
             session = _sessionFactory.OpenSession();
         }
-        try
+        using (var transaction = session.BeginTransaction())
         {
-            using (var transaction = session.BeginTransaction())
-            {
-                await session.SaveOrUpdateAsync(role);
-                await transaction.CommitAsync();
-            }
-        } catch (Exception e)
-        {
-            throw;
+            await session.SaveOrUpdateAsync(role);
+            await transaction.CommitAsync(); 
         }
     }
 
@@ -184,7 +172,7 @@ public class NHibernateHelper
             try
             {
                 var roleToDelete = await session.GetAsync<Role>(role.Id);
-                if (roleToDelete == null) throw new QueryException("Role not found.");
+                if (roleToDelete == null) throw new BadHttpRequestException("Role not found.");
                 await session.DeleteAsync(roleToDelete);
                 await transaction.CommitAsync();
             }
@@ -209,7 +197,7 @@ public class NHibernateHelper
                 var roleToUpdate = await session.GetAsync<Role>(role.Id);
                 if (roleToUpdate == null)
                 {
-                    throw new QueryException("No role found.");
+                    throw new BadHttpRequestException("No role found.");
                 }
                 roleToUpdate.Name = roleName;
                 await session.SaveOrUpdateAsync(roleName);
@@ -331,7 +319,7 @@ public class NHibernateHelper
         {
             session = _sessionFactory.OpenSession();
         }
-        if (!await UserHasClaim(user, claim)) throw new NullReferenceException(claim.Value);
+        if (!await UserHasClaim(user, claim)) throw new BadHttpRequestException(claim.Value);
         {
             var userToUpdate = await session.GetAsync<User>(user.Id);
             await RemoveClaimFromUser(userToUpdate, claim);
@@ -436,7 +424,7 @@ public class NHibernateHelper
         {
             session = _sessionFactory.OpenSession();
         }
-        if (!await RoleHasClaim(role, claim)) throw new NullReferenceException(claim.Value);
+        if (!await RoleHasClaim(role, claim)) throw new BadHttpRequestException(claim.Value);
         using (var transaction = session.BeginTransaction())    
         {
             foreach (var customClaim in role.Claims)

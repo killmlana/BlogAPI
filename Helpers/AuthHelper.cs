@@ -95,7 +95,6 @@ public class AuthHelper
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddDays(1),
             signingCredentials: creds
